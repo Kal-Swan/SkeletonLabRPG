@@ -1,0 +1,68 @@
+name: "step - deploy"
+on:
+  workflow_call:
+    inputs:
+      package_path:
+        required: false
+        type: string
+        default: .
+      artifact_name:
+        required: true
+        type: string
+      env:
+        required: true
+        type: string
+      resource_group_name:
+        required: true
+        type: string
+      container_app_name:
+        required: true
+        type: string
+    secrets:
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_TENANT_ID:
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        required: true
+
+jobs:
+  deploy:
+    name: deploy ${{inputs.container_app_name}}
+    runs-on: ubuntu-latest
+    environment: ${{inputs.env}}
+
+    steps:
+      - name: "azure login"
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to Azure Container Registry
+        run: az acr login --name ${{secrets.ACR_LOGIN_SERVER_NAME}}
+
+      - name: Build and push api image
+        run: |
+          docker build -t ${{secrets.ACR_LOGIN_SERVER_NAME}}.azurecr.io/${{ secrets.API_CONTAINER_NAME }}:latest ./api/SkeletonLabRpg
+          docker push ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.API_CONTAINER_NAME }}:latest
+
+      - name: Build and push Frontend image
+        run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.WEB_CONTAINER_NAME }}:latest ./web/main
+          docker push ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.WEB_CONTAINER_NAME }}:latest
+
+      - name: Update API Container App image to trigger new revision
+        run: |
+          az containerapp update \
+            --name ${{ secrets.API_CONTAINER_NAME }} \
+            --resource-group ${{ secrets.RESOURCE_GROUP }} \
+            --image ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.API_CONTAINER_NAME }}:latest
+
+      - name: Update Frontend Container App image to trigger new revision
+        run: |
+          az containerapp update \
+            --name ${{ secrets.WEB_CONTAINER_NAME }} \
+            --resource-group ${{ secrets.RESOURCE_GROUP }} \
+            --image ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.WEB_CONTAINER_NAME }}:latest

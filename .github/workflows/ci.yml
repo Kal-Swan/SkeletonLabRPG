@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: ["develop"]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-api:
+    name: API CI
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .Net
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: dotnet restore
+        run: dotnet restore ./api/SkeletonLabRpg/SkeletonLabRpg.sln
+
+      - name: dotnet build
+        run: dotnet build ./api/SkeletonLabRpg/SkeletonLabRpg.sln --configuration Release
+
+  deploy_api:
+    name: deploy api
+    needs: build-api
+    uses: ./.github/workflows/step-deploy.yml
+    with:
+      env: uat
+      container_app_name: skeletonlabrpg api
+    secrets: inherit
+
+  build-frontend:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    needs: [build-api, deploy_api]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Use Node.js 23.5.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: "23.5.x"
+          cache: "pnpm"
+          cache-dependency-path: "./web/main/pnpm-lock.yaml"
+      - name: Install dependencies
+        working-directory: ./web/main
+        run: pnpm install
+      - name: Build
+        working-directory: ./web/main
+        run: pnpm run build
+      - name: Add package json in build folder
+        run: cp ./web/main/package.json ./web/main/build/
+
+  deploy_web:
+    name: deploy app
+    needs: build-frontend
+    uses: ./.github/workflows/step-deploy.yml
+    with:
+      env: uat
+      container_app_name: skeletonlabrpg web
+    secrets: inherit

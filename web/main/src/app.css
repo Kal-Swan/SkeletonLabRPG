@@ -1,0 +1,11 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+
+
+body {
+    background: #1e1e2e;
+    color: #ffffff;
+  }
+
+
+  /* #7f7f98 */
