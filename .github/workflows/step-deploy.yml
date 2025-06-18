@@ -2,14 +2,7 @@ name: "step - deploy"
 on:
   workflow_call:
     inputs:
-      package_path:
-        required: false
-        type: string
-        default: .
       env:
-        required: true
-        type: string
-      resource_group_name:
         required: true
         type: string
       container_app_name:
@@ -21,6 +14,14 @@ on:
       AZURE_TENANT_ID:
         required: true
       AZURE_SUBSCRIPTION_ID:
+        required: true
+      ACR_LOGIN_SERVER_NAME:
+        required: true
+      API_CONTAINER_NAME:
+        required: true
+      WEB_CONTAINER_NAME:
+        required: true
+      RESOURCE_GROUP:
         required: true
 
 jobs:
