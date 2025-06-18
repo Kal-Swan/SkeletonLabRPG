@@ -8,6 +8,12 @@ on:
       container_app_name:
         required: true
         type: string
+      dockerfile_api_path:
+        required: true
+        type: string
+      dockerfile_web_path:
+        required: true
+        type: string
     secrets:
       AZURE_CLIENT_ID:
         required: true
@@ -43,13 +49,15 @@ jobs:
 
       - name: Build and push api image
         run: |
-          docker build -t ${{secrets.ACR_LOGIN_SERVER_NAME}}.azurecr.io/${{ secrets.API_CONTAINER_NAME }}:latest ./api/SkeletonLabRpg
+          docker build -t ${{secrets.ACR_LOGIN_SERVER_NAME}}.azurecr.io/${{ secrets.API_CONTAINER_NAME }}:latest ${{ inputs.dockerfile_api_path }}
           docker push ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.API_CONTAINER_NAME }}:latest
+        working-directory: ${{ github.workspace }}
 
       - name: Build and push Frontend image
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.WEB_CONTAINER_NAME }}:latest ./web/main
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.WEB_CONTAINER_NAME }}:latest ${{ inputs.dockerfile_web_path }}
           docker push ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.WEB_CONTAINER_NAME }}:latest
+        working-directory: ${{ github.workspace }}
 
       - name: Update API Container App image to trigger new revision
         run: |

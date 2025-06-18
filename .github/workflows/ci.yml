@@ -34,6 +34,7 @@ jobs:
     with:
       env: uat
       container_app_name: skeletonlabrpg api
+      dockerfile_api_path: ./api/SkeletonLabRpg/SkeletonLabRpg.Api/Dockerfile
     secrets: inherit
 
   build-frontend:
@@ -69,4 +70,5 @@ jobs:
     with:
       env: uat
       container_app_name: skeletonlabrpg web
+      dockerfile_web_path: ./web/main/Dockerfile
     secrets: inherit
