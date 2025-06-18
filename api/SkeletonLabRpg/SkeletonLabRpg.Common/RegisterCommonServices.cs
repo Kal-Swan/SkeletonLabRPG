@@ -1,0 +1,72 @@
+using Azure.Identity;
+using Azure.Storage.Blobs;
+using DEXRPG.Common.Services;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Serilog;
+using SkeletonLabRpg.Common.Configuration;
+using SkeletonLabRpg.Common.Database;
+using SkeletonLabRpg.Common.Database.Cosmosdb;
+using SkeletonLabRpg.Common.Services;
+using SkeletonLabRpg.Common.Services.Interfaces;
+
+namespace SkeletonLabRpg.Common;
+
+public static class RegisterCommonServices
+{
+    public static IServiceCollection ConfigureCommonServices(this IServiceCollection services, ConfigurationManager configuration)
+    {
+        var cosmosDbConfiguration = configuration.GetSection(CosmosDbConfiguration.Name).Get<CosmosDbConfiguration>();
+        services.AddSingleton(provider => new CosmosClient(cosmosDbConfiguration.Endpoint, new DefaultAzureCredential(), new CosmosClientOptions
+        {
+            SerializerOptions = new CosmosSerializationOptions
+            {
+                PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
+            }
+        }));
+        services.AddScoped<ICosmosDbContainerFactory, CosmosDbContainerFactory>();
+        services.AddScoped(typeof(IRepository<>), typeof(CosmosDbBaseRepository<>));
+        services.Configure<CosmosDbConfiguration>(configuration.GetSection(CosmosDbConfiguration.Name));
+        var storageConfiguration = configuration.GetSection(StorageConfiguration.Name).Get<StorageConfiguration>();
+        services.Configure<StorageConfiguration>(configuration.GetSection(StorageConfiguration.Name));
+        services.AddSingleton(_ => new BlobServiceClient(new Uri(storageConfiguration!.Blob.Endpoint), new DefaultAzureCredential()));
+        services.AddTransient<IBlobStorage, BlobStorage>();
+        services.AddSingleton(typeof(IStorageQueue<>), typeof(QueueStorage<>));
+        services.AddScoped(typeof(ITaskCache<>), typeof(TaskCache<>));
+        
+        return services;
+    }
+    
+    public static IServiceCollection RegisterApplicationInsights(this IServiceCollection services, WebApplicationBuilder builder)
+    {
+        if (builder.Environment.IsDevelopment())
+        {
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(builder.Configuration)
+                .WriteTo.Console()
+                .CreateLogger();
+
+            builder.Host.UseSerilog();
+        }
+        else
+        {
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(builder.Configuration)
+                .WriteTo.ApplicationInsights(new TelemetryConfiguration
+                    {
+                        ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+                    },
+                    TelemetryConverter.Traces)
+                .CreateLogger();
+
+            builder.Host.UseSerilog();
+        }
+        services.AddApplicationInsightsTelemetry();
+        
+        return services;
+    }
+}

@@ -1,0 +1,33 @@
+# Build outputs
+**/bin/
+**/obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider and VSCode
+.idea/
+.vscode/
+**.idea/
+
+# App settings
+**/appsettings.json
+**/appsettings.*.json
+
+# Docker artifacts
+*.tar
+.dockerignore
+
+# Logs
+*.log
+
+# Node.js for frontend
+node_modules/
+dist/
+build/
+.env
+
+test/
