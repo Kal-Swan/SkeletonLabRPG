@@ -33,8 +33,8 @@ jobs:
     uses: ./.github/workflows/step-deploy.yml
     with:
       env: uat
-      container_app_name: skeletonlabrpg api
-      dockerfile_api_path: ./api/SkeletonLabRpg/SkeletonLabRpg.Api/Dockerfile
+      container_type: api
+      dockerfile_path: ./api/SkeletonLabRpg/SkeletonLabRpg.Api/Dockerfile
     secrets: inherit
 
   build-frontend:
@@ -69,6 +69,6 @@ jobs:
     uses: ./.github/workflows/step-deploy.yml
     with:
       env: uat
-      container_app_name: skeletonlabrpg web
-      dockerfile_web_path: ./web/main/Dockerfile
+      container_type: web
+      dockerfile_path: ./web/main/Dockerfile
     secrets: inherit

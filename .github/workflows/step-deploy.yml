@@ -5,13 +5,10 @@ on:
       env:
         required: true
         type: string
-      container_app_name:
+      container_type:
         required: true
         type: string
-      dockerfile_api_path:
-        required: true
-        type: string
-      dockerfile_web_path:
+      dockerfile_path:
         required: true
         type: string
     secrets:
@@ -32,11 +29,18 @@ on:
 
 jobs:
   deploy:
-    name: deploy ${{inputs.container_app_name}}
+    name: deploy ${{inputs.container_type}}
     runs-on: ubuntu-latest
     environment: ${{inputs.env}}
 
     steps:
+      - name: set container name
+        run: |
+          if [ "${{ inputs.container_type }}" == "api" ]; then
+            echo "CONTAINER_NAME=${{ secrets.API_CONTAINER_NAME }}" >> $GITHUB_ENV
+          else
+            echo "CONTAINER_NAME=${{ secrets.WEB_CONTAINER_NAME }}" >> $GITHUB_ENV
+          fi
       - name: "azure login"
         uses: azure/login@v2
         with:
@@ -47,28 +51,15 @@ jobs:
       - name: Log in to Azure Container Registry
         run: az acr login --name ${{secrets.ACR_LOGIN_SERVER_NAME}}
 
-      - name: Build and push api image
+      - name: Build and push ${{inputs.container_type}} image
         run: |
-          docker build -t ${{secrets.ACR_LOGIN_SERVER_NAME}}.azurecr.io/${{ secrets.API_CONTAINER_NAME }}:latest ${{ inputs.dockerfile_api_path }}
-          docker push ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.API_CONTAINER_NAME }}:latest
+          docker build -t ${{secrets.ACR_LOGIN_SERVER_NAME}}.azurecr.io/$CONTAINER_NAME:latest ${{ inputs.dockerfile_path }}
+          docker push ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/$CONTAINER_NAME:latest
         working-directory: ${{ github.workspace }}
 
-      - name: Build and push Frontend image
-        run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.WEB_CONTAINER_NAME }}:latest ${{ inputs.dockerfile_web_path }}
-          docker push ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.WEB_CONTAINER_NAME }}:latest
-        working-directory: ${{ github.workspace }}
-
-      - name: Update API Container App image to trigger new revision
+      - name: Update ${{inputs.container_type}} Container App image to trigger new revision
         run: |
           az containerapp update \
-            --name ${{ secrets.API_CONTAINER_NAME }} \
+            --name $CONTAINER_NAME \
             --resource-group ${{ secrets.RESOURCE_GROUP }} \
-            --image ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.API_CONTAINER_NAME }}:latest
-
-      - name: Update Frontend Container App image to trigger new revision
-        run: |
-          az containerapp update \
-            --name ${{ secrets.WEB_CONTAINER_NAME }} \
-            --resource-group ${{ secrets.RESOURCE_GROUP }} \
-            --image ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/${{ secrets.WEB_CONTAINER_NAME }}:latest
+            --image ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/$CONTAINER_NAME:latest
