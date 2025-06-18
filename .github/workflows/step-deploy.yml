@@ -6,9 +6,6 @@ on:
         required: false
         type: string
         default: .
-      artifact_name:
-        required: true
-        type: string
       env:
         required: true
         type: string
