@@ -22,6 +22,11 @@ jobs:
 
       - name: dotnet build
         run: dotnet build ./api/SkeletonLabRpg/SkeletonLabRpg.sln --configuration Release
+
+      - name: Build API Docker image
+        run: |
+          docker build -t skeletonlabrpg-api-pr -f SkeletonLabRpg.Api/Dockerfile .
+        working-directory: ./api/SkeletonLabRpg/
   build-frontend:
     name: Build Frontend
     runs-on: ubuntu-latest
@@ -43,4 +48,9 @@ jobs:
         run: pnpm install --frozen-lockfile --prefix ./web/main
       - name: Build pnpm
         run: pnpm build
+        working-directory: ./web/main
+
+      - name: Build Web Docker image
+        run: |
+          docker build -t skeletonlabrpg-web-pr -f dockerfile .
         working-directory: ./web/main

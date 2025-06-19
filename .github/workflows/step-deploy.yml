@@ -37,6 +37,9 @@ jobs:
     environment: ${{inputs.env}}
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: set container name
         run: |
           if [ "${{ inputs.container_type }}" == "api" ]; then
