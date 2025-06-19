@@ -11,6 +11,9 @@ on:
       dockerfile_path:
         required: true
         type: string
+      context_path:
+        required: true
+        type: string
     secrets:
       AZURE_CLIENT_ID:
         required: true
@@ -55,7 +58,7 @@ jobs:
         run: |
           docker build -t ${{secrets.ACR_LOGIN_SERVER_NAME}}.azurecr.io/$CONTAINER_NAME:latest ${{ inputs.dockerfile_path }}
           docker push ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/$CONTAINER_NAME:latest
-        working-directory: ${{ github.workspace }}
+        working-directory: ${{ github.workspace }}/${{ inputs.context_path }}
 
       - name: Update ${{inputs.container_type}} Container App image to trigger new revision
         run: |
