@@ -57,6 +57,12 @@ jobs:
       - name: Log a working directory
         run: echo "${{ github.workspace }}"
 
+      - name: List contents of the working directory
+        run: |
+          echo "Current directory: $PWD"
+          ls -R
+        working-directory: ${{ github.workspace }}
+
       - name: Build and push ${{inputs.container_type}} image
         run: |
           docker build -t ${{secrets.ACR_LOGIN_SERVER_NAME}}.azurecr.io/$CONTAINER_NAME:latest ${{ inputs.dockerfile_path }}
