@@ -25,7 +25,7 @@ jobs:
 
       - name: Build API Docker image
         run: |
-          docker build -t skeletonlabrpg-api-pr -f SkeletonLabRpg.Api/Dockerfile
+          docker build -t skeletonlabrpg-api-pr -f SkeletonLabRpg.Api/Dockerfile .
         working-directory: ./api/SkeletonLabRpg/
   build-frontend:
     name: Build Frontend
@@ -52,5 +52,5 @@ jobs:
 
       - name: Build Web Docker image
         run: |
-          docker build -t skeletonlabrpg-web-pr -f dockerfile
+          docker build -t skeletonlabrpg-web-pr -f dockerfile .
         working-directory: ./web/main
