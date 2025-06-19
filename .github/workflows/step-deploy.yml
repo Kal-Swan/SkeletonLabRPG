@@ -54,6 +54,9 @@ jobs:
       - name: Log in to Azure Container Registry
         run: az acr login --name ${{secrets.ACR_LOGIN_SERVER_NAME}}
 
+      - name: Log a working directory
+        run: echo "${{ github.workspace }}"
+
       - name: Build and push ${{inputs.container_type}} image
         run: |
           docker build -t ${{secrets.ACR_LOGIN_SERVER_NAME}}.azurecr.io/$CONTAINER_NAME:latest ${{ inputs.dockerfile_path }}
