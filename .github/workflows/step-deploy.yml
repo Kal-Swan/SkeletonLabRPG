@@ -80,6 +80,12 @@ jobs:
           echo "Container Name: $CONTAINER_NAME"
           echo "Image: ${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:latest"
 
+      - name: Verify Container App presence
+        run: az containerapp show --name skeletonlabrpg-api-uat-container --resource-group skeletonlabrpg-uat-rg
+
+      - name: List all container apps in resource group
+        run: az containerapp list --resource-group skeletonlabrpg-uat-rg --output table
+
       - name: Update ${{inputs.container_type}} Container App image to trigger new revision
         run: |
           az containerapp update \
