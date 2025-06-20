@@ -70,7 +70,8 @@ jobs:
         run: |
           docker build -t ${{secrets.ACR_LOGIN_SERVER_NAME}}.azurecr.io/$CONTAINER_NAME:latest ${{ inputs.dockerfile_path }}
           docker push ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/$CONTAINER_NAME:latest
-        working-directory: ${{ github.workspace }}${{ inputs.context_path }}
+          -f ${{ github.workspace }}/${{ inputs.dockerfile_path }} \
+          ${{ github.workspace }}/${{ inputs.context_path }}
 
       - name: Update ${{inputs.container_type}} Container App image to trigger new revision
         run: |
