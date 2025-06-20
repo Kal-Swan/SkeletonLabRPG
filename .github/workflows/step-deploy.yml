@@ -69,10 +69,11 @@ jobs:
       - name: Build and push ${{inputs.container_type}} image
         run: |
           docker build \
-          -t ${{ secrets.ACR_LOGIN_SERVER_NAME }}.azurecr.io/$CONTAINER_NAME:latest \
+          -t ${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:latest \
           -f ${{ github.workspace }}/${{ inputs.dockerfile_path }} \
           ${{ github.workspace }}/${{ inputs.context_path }}
           docker push ${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:latest
+
       - name: Update ${{inputs.container_type}} Container App image to trigger new revision
         run: |
           az containerapp update \
