@@ -35,7 +35,7 @@ jobs:
       env: uat
       container_type: api
       dockerfile_path: /SkeletonLabRpg.Api/Dockerfile
-      context_path: ../../api/SkeletonLabRpg
+      context_path: /api/SkeletonLabRpg
     secrets: inherit
 
   build-frontend:
@@ -72,5 +72,5 @@ jobs:
       env: uat
       container_type: web
       dockerfile_path: dockerfile
-      context_path: ../../web/main
+      context_path: /web/main
     secrets: inherit
