@@ -43,9 +43,9 @@ jobs:
       - name: set container name
         run: |
           if [ "${{ inputs.container_type }}" == "api" ]; then
-            echo "CONTAINER_NAME=${{ secrets.API_CONTAINER_NAME }}" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=skeletonlabrpg-api-uat-container" >> $GITHUB_ENV
           else
-            echo "CONTAINER_NAME=${{ secrets.WEB_CONTAINER_NAME }}" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=skeletonlabrpg-web-uat-container" >> $GITHUB_ENV
           fi
       - name: "azure login"
         uses: azure/login@v2
