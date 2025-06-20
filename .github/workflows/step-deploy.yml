@@ -74,6 +74,12 @@ jobs:
           ${{ github.workspace }}/${{ inputs.context_path }}
           docker push ${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:latest
 
+      - name: Debug Container App Info
+        run: |
+          echo "Resource Group: ${{ secrets.RESOURCE_GROUP }}"
+          echo "Container Name: $CONTAINER_NAME"
+          echo "Image: ${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:latest"
+
       - name: Update ${{inputs.container_type}} Container App image to trigger new revision
         run: |
           az containerapp update \
