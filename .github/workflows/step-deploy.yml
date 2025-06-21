@@ -43,16 +43,16 @@ jobs:
       - name: set container name
         run: |
           if [ "${{ inputs.container_type }}" == "api" ]; then
-            echo "CONTAINER_NAME=skeletonlabrpg-api-uat-container" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=${{ secrets.API_CONTAINER_NAME }}" >> $GITHUB_ENV
           else
-            echo "CONTAINER_NAME=skeletonlabrpg-web-uat-container" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=${{ secrets.WEB_CONTAINER_NAME }}" >> $GITHUB_ENV
           fi
       - name: "azure login"
         uses: azure/login@v2
         with:
-          client-id: 545722c4-0efc-4230-b90e-bd39373f47f7
-          tenant-id: bde38e79-def9-43de-9dbf-158a1e42aa5f
-          subscription-id: 7848ac8c-4a25-4272-8c62-2582982e5699
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to Azure Container Registry
         run: az acr login --name ${{secrets.ACR_LOGIN_SERVER_NAME}}
@@ -76,19 +76,19 @@ jobs:
 
       - name: Debug Container App Info
         run: |
-          echo "Resource Group: skeletonlabrpg-uat-rg"
+          echo "Resource Group: ${{ secrets.RESOURCE_GROUP }}"
           echo "Container Name: $CONTAINER_NAME"
           echo "Image: ${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:latest"
 
-      - name: Verify Container App presence
-        run: az containerapp show --name skeletonlabrpg-api-uat-container --resource-group skeletonlabrpg-uat-rg
+      - name: Verify Container Web App presence
+        run: az containerapp show --name ${{ secrets.WEB_CONTAINER_NAME }} --resource-group skeletonlabrpg-uat-rg
 
       - name: List all container apps in resource group
-        run: az containerapp list --resource-group skeletonlabrpg-uat-rg --output table
+        run: az containerapp list --resource-group ${{ secrets.RESOURCE_GROUP}} --output table
 
       - name: Update ${{inputs.container_type}} Container App image to trigger new revision
         run: |
           az containerapp update \
             --name $CONTAINER_NAME \
-            --resource-group skeletonlabrpg-uat-rg \
+            --resource-group ${{ secrets.RESOURCE_GROUP}} \
             --image ${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:latest
