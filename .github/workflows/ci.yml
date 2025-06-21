@@ -49,12 +49,21 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 9
-      - name: Use Node.js 22.x
+
+      - name: Use Node.js with cache
         uses: actions/setup-node@v2
         with:
           node-version: "22.x"
           cache: "pnpm"
           cache-dependency-path: "./web/main/pnpm-lock.yaml"
+        continue-on-error: true
+
+      - name: Use Node.js without cache (fallback)
+        if: failure()
+        uses: actions/setup-node@v2
+        with:
+          node-version: "22.x"
+
       - name: Install dependencies
         working-directory: ./web/main
         run: pnpm install
