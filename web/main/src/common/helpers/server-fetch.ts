@@ -1,7 +1,4 @@
-interface ServerFetchOptions extends Omit<RequestInit, 'headers'> {
-	headers?: Record<string, string>;
-	token?: string;
-}
+import type { ActiveAccount } from '@models/auth/account';
 
 async function baseServerFetch(
 	path: string,
@@ -15,21 +12,31 @@ async function baseServerFetch(
 	return fetch(path, { ...options, headers });
 }
 
-export async function serverGet(path: string, token?: string | null): Promise<Response> {
+export async function serverGet(path: string, activeAccount: ActiveAccount): Promise<Response> {
+	if (activeAccount?.account == null) {
+		throw new Error('No active account - user not signed in');
+	}
+
 	return baseServerFetch(
 		path,
 		{
 			method: 'GET'
 		},
-		token
+		activeAccount.token
 	);
 }
 
 export async function serverPost(
 	path: string,
 	data: Record<string, any>,
-	token: string | null
+	activeAccount: ActiveAccount
 ): Promise<Response> {
+	console.log('server post active account');
+	console.log(activeAccount?.account);
+	if (activeAccount?.account == null) {
+		throw new Error('No active account - user not signed in');
+	}
+
 	return baseServerFetch(
 		path,
 		{
@@ -37,15 +44,18 @@ export async function serverPost(
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(data)
 		},
-		token
+		activeAccount.token
 	);
 }
 
 export async function serverPut(
 	path: string,
 	data: Record<string, any>,
-	token?: string | null
+	activeAccount: ActiveAccount
 ): Promise<Response> {
+	if (activeAccount?.account == null) {
+		throw new Error('No active account - user not signed in');
+	}
 	return baseServerFetch(
 		path,
 		{
@@ -53,16 +63,19 @@ export async function serverPut(
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(data)
 		},
-		token
+		activeAccount.token
 	);
 }
 
-export async function serverDelete(path: string, token?: string | null): Promise<Response> {
+export async function serverDelete(path: string, activeAccount: ActiveAccount): Promise<Response> {
+	if (activeAccount?.account == null) {
+		throw new Error('No active account - user not signed in');
+	}
 	return baseServerFetch(
 		path,
 		{
 			method: 'DELETE'
 		},
-		token
+		activeAccount.token
 	);
 }

@@ -12,14 +12,18 @@
 		data,
 		children,
 		close,
-		loading
+		handleDelete,
+		loading,
+		saveButtonText = 'Save'
 	}: {
 		schema: T;
 		handleSave: (data: z.infer<T>) => void;
 		data: z.infer<T>;
 		children: () => any;
 		close?: () => void;
+		handleDelete?: () => void;
 		loading?: boolean;
+		saveButtonText?: string;
 	} = $props();
 
 	const FORM_ERRORS_CONTEXT_KEY = 'FormErrorsContext';
@@ -44,20 +48,38 @@
 		}
 	}
 	let isDataValid = $derived(schema.safeParse(data).success);
+
+	$effect(() => {
+		const parsed = schema.safeParse(data);
+		if (parsed.error) {
+			console.log(zodFieldErrorExtraction(parsed.error));
+		}
+	});
 </script>
 
-<div class="space-y-4">
+<div class="h-full space-y-4">
 	{@render children()}
-	<div class="flex justify-end gap-2">
-		{#if close}
-			<TextButton text="Close" onClick={close} />
+	<div class={`flex ${handleDelete ? 'justify-between' : 'justify-end'}`}>
+		{#if handleDelete}
+			<div>
+				<TextButton disable={!isDataValid} text="Delete" onClick={handleDelete} />
+			</div>
 		{/if}
-		<div class="flex">
-			{#if loading}
-				<Loading />
-			{:else}
-				<TextButton disable={!isDataValid} text="Save" onClick={handleValidationOnSave} />
+		<div class="flex justify-end gap-2">
+			{#if close && !loading}
+				<TextButton text="Close" onClick={close} />
 			{/if}
+			<div class="flex">
+				{#if loading}
+					<Loading />
+				{:else}
+					<TextButton
+						disable={!isDataValid}
+						text={saveButtonText}
+						onClick={handleValidationOnSave}
+					/>
+				{/if}
+			</div>
 		</div>
 	</div>
 </div>

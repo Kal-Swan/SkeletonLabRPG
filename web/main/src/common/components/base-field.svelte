@@ -5,7 +5,7 @@
 {@render children()}
 
 {#if errors && errors.length > 0}
-	<div class="text-sm text-red-900/50">
+	<div class="h-full text-sm text-red-900/50">
 		{#each errors as error}
 			<p>{error}</p>
 		{/each}

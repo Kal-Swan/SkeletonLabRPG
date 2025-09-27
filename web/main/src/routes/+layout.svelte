@@ -1,12 +1,13 @@
 <script lang="ts">
-	import Notification from '@components/notification.svelte';
 	import '../app.css';
-	//import Menu from '@components/menu.svelte';
+	import { initMsal } from '@lib/auth/msal-client';
 	let { children } = $props();
+
+	$effect(() => {
+		(async () => initMsal())();
+	});
 </script>
 
-<!-- <Menu /> -->
-<Notification />
 <div class="main-container">
 	{@render children()}
 </div>
@@ -14,5 +15,6 @@
 <style>
 	.main-container {
 		margin: 10px;
+		position: relative;
 	}
 </style>

@@ -6,7 +6,15 @@ export const Actions = {
 	createCharacter: 'createCharacter',
 	deleteAllCharacters: 'deleteAllCharacters',
 	createCharacterAttribute: 'createCharacterAttribute',
-	updateCharacterName: 'updateCharacterName'
+	updateCharacterName: 'updateCharacterName',
+	createRpgBuilds: 'createRpgBuilds',
+	saveRpgBuild: 'saveRpgBuild',
+	getAllRpgBuilds: 'getAllRpgBuilds',
+	updateRpgBuild: 'updateRpgBuild',
+	deleteRpgBuild: 'deleteRpgBuild',
+	createRpgSystem: 'createRpgSystem',
+	updateRpgSystem: 'updateRpgSystem',
+	deleteRpgSystem: 'deleteRpgSystem'
 };
 
 export type ActionType = (typeof Actions)[keyof typeof Actions];

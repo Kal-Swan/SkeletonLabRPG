@@ -1,17 +1,31 @@
 <script lang="ts">
-	import Loading from './loading.svelte';
-
-	let { text, onClick, disableBorder, id, index, disable } = $props<{
+	let {
+		text,
+		onClick,
+		disableBorder,
+		id,
+		index,
+		disable,
+		fontSize = '14',
+		padding = '3',
+		border = true,
+		selected = false
+	} = $props<{
 		text: string;
-		onClick: () => void;
+		onClick: (value: any) => void;
 		disableBorder?: boolean;
 		id?: string;
 		index?: number;
 		disable?: boolean;
+		fontSize?: string;
+		padding?: string;
+		border?: boolean;
+		selected?: boolean;
 	}>();
 	let readonly = $state(false);
 
-	async function action() {
+	async function action(event?: MouseEvent) {
+		event?.stopPropagation();
 		if (readonly) return;
 		console.log('inner button');
 		readonly = true;
@@ -28,10 +42,12 @@
 	disabled={disable ?? readonly}
 	onclick={action}
 	id={`menu-item-${id}-${index}`}
+	style={`border: ${border ? '1px solid #6b7280' : 'none'}`}
 	class={`${disable ? 'disable-button' : `button-container ${disableBorder ? '' : 'button-container-border'}`}`}
 >
 	<div
-		class={`${disable ? 'disable-button p-3 text-sm' : `button-text-container ${disableBorder ? '' : 'p-3'} text-left text-sm`}`}
+		style={`font-size: ${fontSize}px;`}
+		class={`${disable ? `disable-button p-${padding} text-sm` : `button-text-container ${disableBorder ? '' : `p-${padding}`} text-left text-sm`} ${selected ? 'selected' : ''}`}
 	>
 		{text}
 	</div>
@@ -57,10 +73,6 @@
 		cursor: not-allowed;
 	}
 
-	/* .button-container:active {
-		border-width: 3px;
-	} */
-
 	.button-text-container {
 		transition: transform 0.3s ease-in-out;
 		transform: scale(1);
@@ -68,6 +80,11 @@
 
 	.button-text-container:hover {
 		transform: scale(1.1);
-		color: #7f7f98;
+		color: var(--secondary);
+	}
+
+	.selected {
+		transform: scale(1.1);
+		color: var(--secondary);
 	}
 </style>

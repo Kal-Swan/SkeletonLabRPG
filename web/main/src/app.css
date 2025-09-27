@@ -7,5 +7,15 @@ body {
     color: #ffffff;
   }
 
+:root {
+  --primary: #1e1e2e;
+  --info: #7d6cff;
+  --warning: #fbc02d;
+  --success: #66ffa6;
+  --error: #ff6f61;
+  --secondary: #7f7f98;
+
+}
+
 
   /* #7f7f98 */

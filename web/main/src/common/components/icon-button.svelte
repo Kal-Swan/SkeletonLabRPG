@@ -1,13 +1,21 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { ButtonType } from '@models/Icon-type';
-	export let iconType: string;
-	export let buttonType: ButtonType;
-	export let onClick: () => void;
+	let {
+		iconType,
+		buttonType,
+		onClick,
+		color = 'white'
+	} = $props<{
+		iconType: string;
+		buttonType: ButtonType;
+		onClick: () => void;
+		color?: string;
+	}>();
 </script>
 
 <div class="button-container {buttonType}">
-	<Icon onclick={onClick} style="color: white" icon="solar:{iconType}" width="25" height="25" />
+	<Icon onclick={onClick} style="color: {color}" icon="solar:{iconType}" width="25" height="25" />
 </div>
 
 <style>
@@ -43,7 +51,7 @@
 	.button-container.add:hover :global(svg path:nth-child(2)),
 	.button-container.delete:hover :global(svg path:nth-child(2)),
 	.button-container.cancel:hover :global(svg path:nth-child(2)) {
-		transform: scale(1.5);
+		transform: scale(1.2);
 	}
 
 	.button-container.add:not(:hover) :global(svg path:nth-child(2)),

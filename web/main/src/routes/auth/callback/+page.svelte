@@ -1,46 +1,37 @@
 <!-- src/routes/auth/callback/+page.svelte -->
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { msalInstance } from '@lib/auth/msal-client';
-	import { msalReady } from '@lib/stores/msal';
+	import Loading from '@components/loading.svelte';
+	import { activeAccount } from '@lib/auth/msal-client';
 
 	$effect(() => {
-		(async () => {
-			try {
-				msalReady.set(false);
-				await msalInstance.initialize();
-				let accessToken: string | undefined;
-				const result = await msalInstance.handleRedirectPromise();
-				if (result) {
-					msalInstance.setActiveAccount(result.account);
-					accessToken = result.accessToken;
-				}
-				const account = msalInstance.getAllAccounts()[0];
-				if (!accessToken && account) {
-					const response = await msalInstance.acquireTokenSilent({
-						scopes: ['api://de827b2c-7ddd-4903-8bd8-43d6315cdeab/access'],
-						account
+		// The initMsal in +layout.svelte handles the redirect and sets the activeAccount.
+		// We just need to wait for the account to be available and then proceed.
+		if ($activeAccount?.token) {
+			(async () => {
+				try {
+					// This fetch can be used to set a secure, httpOnly cookie on the server
+					// by passing the token to a server-side endpoint.
+					await fetch('/auth/callback', {
+						method: 'POST',
+						body: JSON.stringify({ token: $activeAccount.token }),
+						headers: {
+							'Content-Type': 'application/json'
+						}
 					});
-
-					accessToken = response.accessToken;
+					// Redirect to the main application page after login.
+					goto('/rpgsystem', { replaceState: true });
+				} catch (error) {
+					console.error('Failed to complete post-login actions:', error);
+					// Optionally handle this error, e.g., by showing a message to the user.
+					// For now, we will still try to redirect.
+					goto('/rpgsystem', { replaceState: true });
 				}
-
-				await fetch('/auth/callback', {
-					method: 'POST',
-					body: JSON.stringify({ token: accessToken }),
-					headers: {
-						'Content-Type': 'application/json'
-					}
-				});
-
-				goto('/character');
-			} catch (error) {
-				console.error('Auth error:', error);
-			} finally {
-				msalReady.set(true);
-			}
-		})();
+			})();
+		}
 	});
 </script>
 
-<p>Logging you in...</p>
+<div class="flex h-screen w-full items-center justify-center text-lg">
+	Logging you in&nbsp;<Loading />
+</div>

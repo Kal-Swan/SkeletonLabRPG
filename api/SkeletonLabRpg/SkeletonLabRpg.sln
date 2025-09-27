@@ -4,8 +4,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkeletonLabRpg.Api", "Skele
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkeletonLabRpg.Common", "SkeletonLabRpg.Common\SkeletonLabRpg.Common.csproj", "{0031E64C-C609-4C6C-A6E1-2F2CDBC4E942}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkeletonLabRpg.Ml", "SkeletonLabRpg.Ml\SkeletonLabRpg.Ml.csproj", "{01A834EC-8537-447E-B2BC-53BF7B8C6D34}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkeletonLabRpg.AzureFunctions", "SkeletonLabRpg.AzureFunctions\SkeletonLabRpg.AzureFunctions.csproj", "{05B043F9-0A56-41EF-8AD2-6B8103C63FA8}"
 EndProject
 Global
@@ -22,10 +20,6 @@ Global
 		{0031E64C-C609-4C6C-A6E1-2F2CDBC4E942}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0031E64C-C609-4C6C-A6E1-2F2CDBC4E942}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0031E64C-C609-4C6C-A6E1-2F2CDBC4E942}.Release|Any CPU.Build.0 = Release|Any CPU
-		{01A834EC-8537-447E-B2BC-53BF7B8C6D34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{01A834EC-8537-447E-B2BC-53BF7B8C6D34}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{01A834EC-8537-447E-B2BC-53BF7B8C6D34}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{01A834EC-8537-447E-B2BC-53BF7B8C6D34}.Release|Any CPU.Build.0 = Release|Any CPU
 		{05B043F9-0A56-41EF-8AD2-6B8103C63FA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{05B043F9-0A56-41EF-8AD2-6B8103C63FA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05B043F9-0A56-41EF-8AD2-6B8103C63FA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
