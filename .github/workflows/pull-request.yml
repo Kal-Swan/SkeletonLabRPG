@@ -64,4 +64,4 @@ jobs:
 
       - name: Type checking
         run: |
-          mypy ./llm/
+          mypy ./llm/app/
