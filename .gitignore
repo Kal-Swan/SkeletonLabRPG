@@ -29,7 +29,6 @@ node_modules/
 dist/
 build/
 .env
-Lib/
 __pycache__/
 
 test/

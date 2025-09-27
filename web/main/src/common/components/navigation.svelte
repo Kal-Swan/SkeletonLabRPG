@@ -2,8 +2,7 @@
 	import { goto } from '$app/navigation';
 	import TextButton from './text-button.svelte';
 	import { page } from '$app/state';
-	import { msalInstance, signOut, activeAccount } from '@lib/auth/msal-client';
-	import Icon from '@iconify/svelte';
+	import { signOut, activeAccount } from '@lib/auth/msal-client';
 	import Select from './select.svelte';
 
 	let isMobile = $state<boolean>(false);
@@ -25,9 +24,6 @@
 	];
 
 	$effect(() => {
-		console.log('navigation');
-		console.log($activeAccount?.account?.username);
-
 		if (previousOption !== selectedOption) {
 			previousOption = selectedOption;
 			if (selectedOption === 'signout') {
@@ -101,9 +97,5 @@
 
 	.logo {
 		color: var(--secondary);
-	}
-
-	.mobile-menu {
-		background-color: var(--primary);
 	}
 </style>
