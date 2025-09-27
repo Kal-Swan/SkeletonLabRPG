@@ -44,7 +44,7 @@ jobs:
         run: |
           if [ "${{ inputs.container_type }}" == "api" ]; then
             echo "CONTAINER_NAME=${{ secrets.API_CONTAINER_NAME }}" >> $GITHUB_ENV
-          else if
+          elif
           [ "${{ inputs.container_type }}" == "llm" ]; then
             echo "CONTAINER_NAME=${{ secrets.LLM_CONTAINER_NAME }}" >> $GITHUB_ENV
           else
