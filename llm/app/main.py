@@ -1,11 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
-# import asyncio
-from .sources import all_sources
-
-from app.azure_llm_logic import process_data
-# from rag_pipeline import generate_rpg_answer
+from azure_llm_logic import process_data
+# nest_asyncio is required to allow LangChain to run its own async functions
+# within the event loop already managed by FastAPI/Uvicorn.
 import nest_asyncio
+
 nest_asyncio.apply()
 app = FastAPI()
 

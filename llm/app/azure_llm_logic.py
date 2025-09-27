@@ -1,6 +1,5 @@
 import os
 import time
-import json
 import io
 from dotenv import load_dotenv
 from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
@@ -14,9 +13,9 @@ from langchain.output_parsers import PydanticOutputParser
 from langchain.schema import Document
 from openai import RateLimitError
 from langchain.document_transformers import Html2TextTransformer
-from app.build_model import BuildList
-from app.prompt_instructions import instruction
-from .constants import bg3, daggerheart
+from build_model import BuildList
+from prompt_instructions import instruction
+from constants import bg3, daggerheart
 from azure.storage.blob import BlobServiceClient
 from PyPDF2 import PdfReader
 
