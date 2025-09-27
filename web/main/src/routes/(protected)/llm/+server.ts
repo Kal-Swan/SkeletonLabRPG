@@ -21,7 +21,7 @@ import {
 } from '../../../common/helpers/server-fetch.js';
 import { createBuildQuestionSchema } from '@models/rpgbuild/llm-schema.js';
 import { CreateRpgBuildsEndpoint } from '@environment/llm/endpoints.js';
-import { createRpgBuildEndpoint } from '@environment/build/endpoint.js';
+import { createRpgBuildEndpoint } from '@environment/rpg-build/endpoint.js';
 import { buildSchema } from '@models/rpgbuild/build-schema.js';
 import { validateRequest } from '@helpers/zod-validation.js';
 import type { ActiveAccount } from '@models/auth/account.js';

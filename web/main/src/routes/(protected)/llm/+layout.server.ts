@@ -1,4 +1,4 @@
-import { getAllRpgBuildsEndpoint } from '@environment/build/endpoint';
+import { getAllRpgBuildsEndpoint } from '@environment/rpg-build/endpoint.js';
 import { redirect } from '@sveltejs/kit';
 import { rpgSystemEndpoint } from '../rpgsystem/endpoint.js';
 
