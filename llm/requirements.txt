@@ -1,0 +1,39 @@
+numpy==2.3.1
+
+# LangChain core
+langchain==0.3.26
+
+# OpenAI LLM and embeddings
+openai==1.91.0
+langchain-openai==0.3.25
+langchain-community==0.3.26
+html2text==2025.4.15
+nest_asyncio==1.6.0
+pdfplumber==0.11.7
+
+# Document loading and splitting
+tiktoken==0.9.0    # Required by OpenAI tokenizer
+unstructured==0.17.2  # Useful for parsing raw text, HTML, PDFs (optional)
+
+# Vector store: FAISS
+faiss-cpu==1.11.0   # Vector DB for local development
+
+# Text processing utilities
+beautifulsoup4==4.13.4  # For scraping or parsing HTML
+lxml==5.4.0             # Parser backend for some HTML/XML loaders
+
+# Optional web framework if you expose this as an API
+fastapi==0.115.13
+uvicorn[standard]==0.34.3
+
+# Environment configuration
+python-dotenv==1.1.0
+azure.identity==1.23.0
+
+azure-storage-blob==12.26.0
+
+PyPDF2==3.0.1
+
+mypy==1.18.2
+
+

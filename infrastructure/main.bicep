@@ -125,9 +125,20 @@ module container 'modules/container.bicep' = {
   name: 'containerModule'
   params: {
     containerEnvName: '${prefix}-${environment}-container-env'
-    apiAppName: '${prefix}-api-${environment}-container'
     webAppName: '${prefix}-web-${environment}-container'
+    apiAppName: '${prefix}-api-${environment}-container'
+    llmAppName: '${prefix}-llm-${environment}-container'
     acrName: '${prefix}${environment}acr'
+    llmApiAppSettings: [
+      {
+        name: 'AZURE_BLOB_STORAGE_URL'
+        value: 'https://skeletonlabrpguatstorage.blob.core.windows.net/'
+      }
+      {
+        name: 'Environment'
+        value: 'UAT'
+      }
+    ]
     apiAppSettings: [
       {
         name: 'ASPNETCORE_ENVIRONMENT'
@@ -156,5 +167,14 @@ module container 'modules/container.bicep' = {
         value: '~3'
       }
     ]
+  }
+}
+
+module openAi './modules/openai.bicep' = {
+  name: 'openAiModule'
+  params: {
+    openAiName: '${prefix}-${environment}-openai'
+    customSubDomainName: '${prefix}${environment}openai'
+    location: resourceGroup().location
   }
 }

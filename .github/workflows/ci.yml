@@ -83,3 +83,30 @@ jobs:
       dockerfile_path: web/main/dockerfile
       context_path: web/main
     secrets: inherit
+
+  build-llm:
+    name: Build LLM
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        working-directory: ./llm
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ./llm/requirements.txt
+
+  deploy_llm:
+    name: deploy llm
+    uses: ./.github/workflows/step-deploy.yml
+    with:
+      env: uat
+      container_type: llm
+      dockerfile_path: llm/dockerfile
+      context_path: llm
+    secrets: inherit

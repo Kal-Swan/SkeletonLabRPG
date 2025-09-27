@@ -1,22 +1,29 @@
 using System.Security.Claims;
 using Azure.Identity;
-using DEXRPG.WebApi.Authorisation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Identity.Web;
+using SkeletonLabRpg.Api.Authorisation;
 using SkeletonLabRpg.Api.Endpoints;
 using SkeletonLabRpg.Api.Exceptions;
+using SkeletonLabRpg.Api.Llm.External;
 using SkeletonLabRpg.Api.Middlewares;
 using SkeletonLabRpg.Common;
 using SkeletonLabRpg.Common.Configuration;
 using SkeletonLabRpg.Common.Constants;
-using SkeletonLabRpg.Ml;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddEndpoints();
+
+builder.Services.AddHttpClient<LlmService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:8000/api/llm/");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.Timeout = TimeSpan.FromMinutes(5);
+});
 
 var appConfiguration = builder.Configuration.GetSection(AppConfiguration.Name).Get<AppConfiguration>();
 
@@ -49,7 +56,6 @@ builder.Services.AddScoped<AccountDetails>();
 builder.Services.RegisterApplicationInsights(builder);
 builder.Services.ConfigureCommonServices(builder.Configuration);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.ConfigureMachineLearningServices();
 builder.Services.Configure<SkeletonLabRpgConfiguration>(builder.Configuration.GetSection(SkeletonLabRpgConfiguration.Name));
 builder.Services.AddCors();
 //builder.Services.AddControllers();

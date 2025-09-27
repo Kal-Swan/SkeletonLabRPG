@@ -1,40 +1,26 @@
 <script lang="ts">
-	import { msalInstance } from '@lib/auth/msal-client';
-	import { msalReady } from '@lib/stores/msal';
-
-	$effect(() => {
-		(async () => {
-			msalReady.set(false);
-			await msalInstance.initialize();
-			try {
-				await msalInstance.handleRedirectPromise();
-			} catch (err) {
-				console.error('Redirect handling error', err);
-			} finally {
-				msalReady.set(true);
-			}
-		})();
-	});
-
-	const login = async () => {
-		console.log('login clicked');
-		if ($msalReady) {
-			await msalInstance.loginRedirect({
-				scopes: ['openid', 'profile', 'api://de827b2c-7ddd-4903-8bd8-43d6315cdeab/access']
-			});
-		}
-	};
-
-	const loginOut = async () => {
-		if ($msalReady) {
-			await msalInstance.logoutRedirect();
-		}
-	};
+	import { signIn } from '@lib/auth/msal-client';
 </script>
 
-<div>
-	<button class="cursor-pointer" onclick={login}>Sign in with Azure</button>
+<div class="m-2">
+	<div class="flex w-full justify-between border-b-1 border-b-white p-3">
+		<div>Skeleton Lab RPG</div>
+		<button class="cursor-pointer" onclick={signIn}>Sign in</button>
+	</div>
+	<div class="mt-2">
+		<div class="title mb-5 w-full text-lg italic">What is the purpose of Skeleton Lab RPG?</div>
+		<div class="mb-2">Select your RPG system e.g. Daggerheart, BG3 etc</div>
+		<div class="mb-2">
+			Ask AI a question on suitable builds for the selected system e.g. "What class does the
+			strongest physical damage". Currently using training model GPT-4.
+		</div>
+		<div class="mb-2">Choose favourte build, edit builds, save builds etc</div>
+		<div class="mb-2">More features to come.</div>
+	</div>
 </div>
-<div>
-	<button class="cursor-pointer" onclick={loginOut}>Sign out</button>
-</div>
+
+<style>
+	.title {
+		color: var(--secondary);
+	}
+</style>

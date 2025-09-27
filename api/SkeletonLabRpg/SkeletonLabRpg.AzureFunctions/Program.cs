@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.Hosting;
 using SkeletonLabRpg.Common;
 using SkeletonLabRpg.Common.Configuration;
-using SkeletonLabRpg.Ml;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
@@ -21,5 +20,4 @@ builder.Configuration.AddAzureAppConfiguration(options =>
 });
 
 builder.Services.ConfigureCommonServices(builder.Configuration);
-builder.Services.ConfigureMachineLearningServices();
 builder.Build().Run();

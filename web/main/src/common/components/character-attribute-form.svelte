@@ -63,7 +63,7 @@
 	}
 
 	async function handleSave() {
-		const response = (await clientFetch('/', Actions.createCharacterAttribute, request)) as Result;
+		const response = await clientFetch('/', Actions.createCharacterAttribute, request);
 		console.log(response);
 		if (
 			!response.isSuccess &&
@@ -194,7 +194,7 @@
 			<Label text="Damage Type" />
 			<SelectField
 				errors={fieldErrors['damageType']}
-				bind:value={characterAttributeData.damageType}
+				bind:id={characterAttributeData.damageType}
 				options={damageTypeOptions}
 			/>
 		</div>
@@ -202,7 +202,7 @@
 			<Label text="Weapon Type" />
 			<SelectField
 				errors={fieldErrors['weaponType']}
-				bind:value={characterAttributeData.weaponType}
+				bind:id={characterAttributeData.weaponType}
 				options={weaponTypeOptions}
 			/>
 		</div>
@@ -235,7 +235,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="mb-10 mt-5 flex justify-end">
+	<div class="mt-5 mb-10 flex justify-end">
 		<TextButton onClick={handleAddDamage} text="Show Damage" />
 	</div>
 	<div class="grid grid-cols-3 gap-2">

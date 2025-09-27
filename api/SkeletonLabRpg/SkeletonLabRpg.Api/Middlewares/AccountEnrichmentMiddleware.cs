@@ -1,4 +1,4 @@
-using DEXRPG.WebApi.Authorisation;
+using SkeletonLabRpg.Api.Authorisation;
 using SkeletonLabRpg.Api.Extensions;
 
 namespace SkeletonLabRpg.Api.Middlewares;

@@ -2,12 +2,12 @@ using Newtonsoft.Json;
 using SkeletonLabRpg.Common.Database.Cosmosdb.Constants;
 
 namespace SkeletonLabRpg.Common.Database.Cosmosdb.Entities;
-
 public abstract class CosmosDbDocumentBase<T> : ICosmosDbDocumentBase
+
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     [JsonProperty("partitionKey")] 
-    public string PartitionKey => typeof(T).Name;
+    public virtual string PartitionKey => typeof(T).Name;
 
     [JsonProperty("_etag")]
     public string ETag { get; }

@@ -36,7 +36,15 @@ public class GlobalExceptionHandler(
                 break;
             case BadRequestException badRequestException:
                 httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                response = new ApiErrorResponse(HttpStatusCode.BadRequest, ExceptionType.BadRequest,"Request failed validation");
+                response = new ApiErrorResponse(HttpStatusCode.BadRequest, ExceptionType.BadRequest,
+                    badRequestException is { ShowCustomMessage: true, Message: not null } 
+                        ? badRequestException.Message 
+                        : "Request failed validation");
+                break;
+            case NotFoundException notFoundException:
+                httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                response = new ApiErrorResponse(HttpStatusCode.NotFound, ExceptionType.NotFound, 
+                    notFoundException is { ShowCustomMessage: true, Message: not null} ? notFoundException.Message : "Saved item not found");
                 break;
             default:
                 httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

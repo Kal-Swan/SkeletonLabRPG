@@ -3,6 +3,8 @@
 	import BaseField from './base-field.svelte';
 	import { getContext } from 'svelte';
 	import type { Readable } from 'svelte/store';
+	import Label from './label.svelte';
+	import Textarea from './textarea.svelte';
 
 	let {
 		name,
@@ -11,16 +13,18 @@
 		type,
 		readonly,
 		checked = $bindable(false),
-		underline
+		underline,
+		isTextArea
 	} = $props<{
-		value?: string | number | boolean | null;
+		value?: string | number | boolean | null | unknown;
 		placeholder?: string;
 		type?: HTMLInputTypeAttribute | null | undefined;
 		readonly?: boolean;
 		checked?: boolean;
 		underline?: boolean;
 		errors?: string[];
-		name: string;
+		name?: string;
+		isTextArea?: boolean;
 	}>();
 
 	const FORM_ERRORS_CONTEXT_KEY = 'FormErrorsContext';
@@ -34,7 +38,6 @@
 	>(FORM_ERRORS_CONTEXT_KEY);
 
 	let fieldErrors = $state<string[]>([]);
-
 	$effect(() => {
 		if (formErrorsStore) {
 			const unsubscribe = formErrorsStore.subscribe((allErrors) => {
@@ -48,6 +51,7 @@
 </script>
 
 <BaseField errors={fieldErrors}>
+	<Label text={name} textSize="text-sm" />
 	{#if type === 'checkbox'}
 		<input
 			class="{underline ? 'underline' : ''} checkbox-field focus:ring-0"
@@ -56,6 +60,8 @@
 			bind:checked
 			{readonly}
 		/>
+	{:else if isTextArea}
+		<Textarea classNames="input-field" minRows={1} maxRows={10} bind:value></Textarea>
 	{:else}
 		<input class="input-field focus:ring-0" {type} {placeholder} bind:value {readonly} />
 	{/if}

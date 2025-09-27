@@ -2,11 +2,20 @@
 	import Icon from '@iconify/svelte';
 	import TextButton from './text-button.svelte';
 	import { clickOutside } from '@actions/clickOutside';
+	import Loading from './loading.svelte';
 
-	let { title, id, children, menu, handleItemClick } = $props<{
+	let {
+		title,
+		item,
+		children,
+		menu,
+		handleItemClick,
+		loading = ''
+	} = $props<{
 		title: string;
-		id: string;
-		menu: { text: string; onClick: (text: string) => void }[];
+		item: any;
+		loading: string;
+		menu: { text: string; onClick: (text: string, item: any) => void }[];
 		handleItemClick?: (id: string) => void;
 		children?: () => void;
 	}>();
@@ -15,61 +24,73 @@
 	let menuTriggerElement: HTMLButtonElement | undefined = $state();
 
 	function onItemClick() {
-		handleItemClick(id);
+		if (handleItemClick) {
+			handleItemClick(item);
+		}
 	}
 	function handleItemKeyDown(event: KeyboardEvent) {
 		if (event.key === 'Enter' || event.key === ' ') {
 			event.preventDefault();
-			menuOpen = !menuOpen;
+			onItemClick();
 		} else if (event.key === 'Escape' && menuOpen) {
 			event.preventDefault();
 			menuOpen = false;
-			menuTriggerElement?.focus();
 		}
 	}
 
-	function handleMenuOptionClick(optionOnClick: (text: string) => void, text: string) {
-		optionOnClick(text);
+	function handleMenuOptionClick(optionOnClick: (text: string, item: any) => void, text: string) {
+		optionOnClick(text, item);
 		menuOpen = false;
 	}
 
-	function menuClick() {
-		menuOpen = !menuOpen;
+	function closeMenu() {
+		menuOpen = false;
 	}
 
-	let menuTriggerButtonId = `${id}-menu-button`;
+	let menuTriggerButtonId = `${item.id}-menu-button`;
+
+	function toggleMenu(event?: MouseEvent) {
+		// Stop the click from bubbling up to the parent div
+		event?.stopPropagation();
+		menuOpen = !menuOpen;
+	}
 </script>
 
 <div
 	role="button"
-	aria-labelledby={`item-title-${id}`}
+	aria-labelledby={`item-title-${item.id}`}
 	onkeydown={handleItemKeyDown}
 	tabindex="0"
 	onclick={onItemClick}
-	class="flex w-full flex-col gap-2 rounded-2xl border p-2 md:w-auto md:min-w-md"
+	class="flex w-full cursor-pointer flex-col gap-2 rounded-2xl border p-2"
 >
-	<div class="flex items-center justify-between">
-		<div id={`item-title-${id}`} class="font-bold uppercase">{title}</div>
+	<div class="flex items-start justify-between">
+		<div id={`item-title-${item.id}`} class="font-bold uppercase">{title}</div>
 		<div class="relative">
-			<button
-				id={menuTriggerButtonId}
-				onclick={menuClick}
-				type="button"
-				class="dot rounded-full p-1 focus:outline-none"
-			>
-				<Icon id={menuTriggerButtonId} icon="solar:menu-dots-bold" width="24" height="24" />
-			</button>
+			{#if loading === item.id}
+				<Loading />
+			{:else}
+				<button
+					id={menuTriggerButtonId}
+					onclick={toggleMenu}
+					type="button"
+					class="dot rounded-full p-1 focus:outline-none"
+				>
+					<Icon id={menuTriggerButtonId} icon="solar:menu-dots-bold" width="24" height="24" />
+				</button>
+			{/if}
 			{#if menuOpen}
 				<div
 					role="menu"
-					use:clickOutside={{ callback: menuClick, triggerButtonId: menuTriggerButtonId }}
-					id={`menu-dropdown-${id}`}
-					class="background-color absolute right-0 z-10 mt-1 flex w-40 origin-top-right flex-col rounded-2xl p-4 text-9xl shadow-lg focus:outline-none"
+					use:clickOutside={{ callback: closeMenu, triggerButtonId: menuTriggerButtonId }}
+					id={`menu-dropdown-${item.id}`}
+					class="menu-container absolute right-0 z-10 mt-1 flex w-40 origin-top-right flex-col rounded-2xl p-4 text-9xl shadow-lg focus:outline-none"
 				>
 					{#each menu as item, index (item.text)}
 						<TextButton
 							id={item.id}
 							{index}
+							border={false}
 							disableBorder
 							text={item.text}
 							onClick={() => handleMenuOptionClick(item.onClick, item.text)}
@@ -79,12 +100,15 @@
 			{/if}
 		</div>
 	</div>
-	{@render children()}
+	{#if children}
+		{@render children()}
+	{/if}
 </div>
 
 <style>
-	.background-color {
-		background-color: #1e1e2e;
+	.menu-container {
+		background-color: var(--primary);
+		border: 1px solid var(--secondary);
 	}
 
 	.dot {

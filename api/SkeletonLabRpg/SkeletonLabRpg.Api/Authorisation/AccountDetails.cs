@@ -1,4 +1,4 @@
-namespace DEXRPG.WebApi.Authorisation;
+namespace SkeletonLabRpg.Api.Authorisation;
 
 public class AccountDetails
 {

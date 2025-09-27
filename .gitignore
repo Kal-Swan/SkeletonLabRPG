@@ -29,5 +29,9 @@ node_modules/
 dist/
 build/
 .env
+__pycache__/
 
 test/
+
+llm/installation-note.txt
+llm/local-test.txt

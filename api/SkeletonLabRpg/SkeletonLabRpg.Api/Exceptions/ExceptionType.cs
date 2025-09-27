@@ -5,5 +5,7 @@ public enum ExceptionType
     Unknown = 0,
     Prediction = 1,
     Database = 2,
-    BadRequest = 3
+    BadRequest = 3,
+    Api = 4,
+    NotFound = 5
 }

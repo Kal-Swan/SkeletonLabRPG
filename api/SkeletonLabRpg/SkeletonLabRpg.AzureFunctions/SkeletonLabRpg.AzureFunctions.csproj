@@ -32,6 +32,5 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\SkeletonLabRpg.Common\SkeletonLabRpg.Common.csproj" />
-      <ProjectReference Include="..\SkeletonLabRpg.Ml\SkeletonLabRpg.Ml.csproj" />
     </ItemGroup>
 </Project>

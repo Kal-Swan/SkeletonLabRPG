@@ -1,0 +1,14 @@
+FROM python:3.13-slim
+WORKDIR /llm
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# -b bind the ip address and port to the app
+# -k specifing the worker class to use
+# gunicorn is a production server for running Python web applications
+# uvicorn is an ASGI server worker for Python web applications
+
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "main:app", "-k", "uvicorn.workers.UvicornWorker", "--workers", "${WORKERS:-1}"]
