@@ -58,6 +58,9 @@ resource llmApp 'Microsoft.App/containerApps@2025-01-01' = {
           env: llmApiAppSettings
         }
       ]
+      scale: {
+        minReplicas: 1
+      }
     }
   }
 }
@@ -94,6 +97,9 @@ resource apiApp 'Microsoft.App/containerApps@2025-01-01' = {
           env: apiAppSettings
         }
       ]
+      scale: {
+        minReplicas: 1
+      }
     }
   }
 }
@@ -130,6 +136,9 @@ resource webApp 'Microsoft.App/containerApps@2025-01-01' = {
           env: webAppSettings
         }
       ]
+      scale: {
+        minReplicas: 1
+      }
     }
   }
 }
