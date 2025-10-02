@@ -11,6 +11,16 @@ param blobContainerNames array = [
   'characterattributemltraining'
 ]
 
+param keyValueKey object = {
+  azureB2cWebClientId: 'azure-b2c-web-client-id'
+  azureB2cAuthority: 'azure-b2c-authority'
+  azureB2cRedirectUri: 'azure-b2c-redirect-uri'
+  azureB2cTenant: 'azure-b2c-tenant'
+  azureB2cApiAccessScope: 'azure-b2c-api-access-scope'
+  azureB2cApiClientId: 'azure-b2c-api-client-id'
+  azureB2cTenantId: 'azure-b2c-tenant-id'
+}
+
 module appConfig './modules/app-config.bicep' = {
   name: 'appConfigModule'
   params: {
@@ -121,6 +131,23 @@ module storage './modules/storage.bicep' = {
   }
 }
 
+module keyVault './modules/key-vault.bicep' = {
+  name: 'keyvault'
+  params: {
+    name: '${prefix}-${environment}-kv'
+  }
+}
+
+param keyNames array = [
+  keyValueKey.azureB2cWebClientId
+  keyValueKey.azureB2cAuthority
+  keyValueKey.azureB2cRedirectUri
+  keyValueKey.azureB2cTenant
+  keyValueKey.azureB2cApiAccessScope
+  keyValueKey.azureB2cApiClientId
+  keyValueKey.azureB2cTenantId
+]
+
 module container 'modules/container.bicep' = {
   name: 'containerModule'
   params: {
@@ -129,6 +156,12 @@ module container 'modules/container.bicep' = {
     apiAppName: '${prefix}-api-${environment}-container'
     llmAppName: '${prefix}-llm-${environment}-container'
     acrName: '${prefix}${environment}acr'
+    webContainerSecrets: [
+      for item in keyNames: {
+        key: item
+        value: '${keyVault.outputs.vaultUri}secrets/${item}'
+      }
+    ]
     llmApiAppSettings: [
       {
         name: 'AZURE_BLOB_STORAGE_URL'
@@ -165,6 +198,34 @@ module container 'modules/container.bicep' = {
       {
         name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
         value: '~3'
+      }
+      {
+        name: 'PUBLIC_AZURE_B2C_WEB_CLIENT_ID'
+        secretRef: keyValueKey.azureB2cWebClientId
+      }
+      {
+        name: 'PUBLIC_AZURE_B2C_AUTHORITY'
+        secretRef: keyValueKey.azureB2cAuthority
+      }
+      {
+        name: 'PUBLIC_AZURE_B2C_REDIRECT_URI'
+        secretRef: keyValueKey.azureB2cRedirectUri
+      }
+      {
+        name: 'PUBLIC_AZURE_B2C_TENANT'
+        secretRef: keyValueKey.azureB2cTenant
+      }
+      {
+        name: 'PUBLIC_AZURE_B2C_API_ACCESS_SCOPE'
+        secretRef: keyValueKey.azureB2cApiAccessScope
+      }
+      {
+        name: 'PUBLIC_AZURE_B2C_API_CLIENT_ID'
+        secretRef: keyValueKey.azureB2cApiClientId
+      }
+      {
+        name: 'PUBLIC_AZURE_B2C_TENANT_ID'
+        secretRef: keyValueKey.azureB2cTenantId
       }
     ]
   }
