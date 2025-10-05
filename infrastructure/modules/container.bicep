@@ -6,7 +6,6 @@ param llmAppName string
 param apiAppSettings array
 param webAppSettings array
 param llmApiAppSettings array
-param webContainerSecrets object[]
 
 resource acr 'Microsoft.ContainerRegistry/registries@2025-04-01' = {
   name: acrName
@@ -124,12 +123,6 @@ resource webApp 'Microsoft.App/containerApps@2025-01-01' = {
         external: true
         targetPort: 80
       }
-      secrets: [
-        for item in webContainerSecrets: {
-          name: item.key
-          value: item.value
-        }
-      ]
     }
     template: {
       containers: [
