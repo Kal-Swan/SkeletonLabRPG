@@ -19,6 +19,7 @@ param keyValueKey object = {
   azureB2cApiAccessScope: 'azure-b2c-api-access-scope'
   azureB2cApiClientId: 'azure-b2c-api-client-id'
   azureB2cTenantId: 'azure-b2c-tenant-id'
+  apiUrl: 'api-url'
 }
 
 module appConfig './modules/app-config.bicep' = {
@@ -138,16 +139,6 @@ module keyVault './modules/key-vault.bicep' = {
   }
 }
 
-param keyNames array = [
-  keyValueKey.azureB2cWebClientId
-  keyValueKey.azureB2cAuthority
-  keyValueKey.azureB2cRedirectUri
-  keyValueKey.azureB2cTenant
-  keyValueKey.azureB2cApiAccessScope
-  keyValueKey.azureB2cApiClientId
-  keyValueKey.azureB2cTenantId
-]
-
 module container 'modules/container.bicep' = {
   name: 'containerModule'
   params: {
@@ -156,12 +147,6 @@ module container 'modules/container.bicep' = {
     apiAppName: '${prefix}-api-${environment}-container'
     llmAppName: '${prefix}-llm-${environment}-container'
     acrName: '${prefix}${environment}acr'
-    webContainerSecrets: [
-      for item in keyNames: {
-        key: item
-        value: '${keyVault.outputs.vaultUri}secrets/${item}'
-      }
-    ]
     llmApiAppSettings: [
       {
         name: 'AZURE_BLOB_STORAGE_URL'
@@ -226,6 +211,10 @@ module container 'modules/container.bicep' = {
       {
         name: 'PUBLIC_AZURE_B2C_TENANT_ID'
         secretRef: keyValueKey.azureB2cTenantId
+      }
+      {
+        name: 'PUBLIC_API_URL'
+        secretRef: keyValueKey.apiUrl
       }
     ]
   }
