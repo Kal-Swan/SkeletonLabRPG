@@ -27,7 +27,7 @@ module appConfig './modules/app-config.bicep' = {
   params: {
     appConfigurationName: appConfigName
     principalId: userGroupId
-    managedIdentities: [api.outputs.webAppIdentityPrincipalId]
+    managedIdentities: [container.outputs.apiContainerPrincipleId, container.outputs.llmContainerPrincipleId]
     databaseName: cosmosdb.outputs.databaseName
     databaseEndpoint: cosmosdb.outputs.cosmosDbUri
     databasePartitionKeyPath: cosmosdb.outputs.partitionKeyPath
@@ -129,6 +129,7 @@ module storage './modules/storage.bicep' = {
     location: resourceGroup().location
     blobContainerNames: blobContainerNames
     queueNames: queueNames
+    managedIdentities: [container.outputs.llmContainerPrincipleId]
   }
 }
 
@@ -166,6 +167,10 @@ module container 'modules/container.bicep' = {
         name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
         value: apiAppInsights.outputs.connectionString
       }
+      {
+        name: 'AppConfiguration__Endpoint'
+        value: 'https://skeletonlabrpg-shared-appconfig.azconfig.io'
+      }
     ]
     webAppSettings: [
       {
@@ -184,38 +189,38 @@ module container 'modules/container.bicep' = {
         name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
         value: '~3'
       }
-      {
-        name: 'PUBLIC_AZURE_B2C_WEB_CLIENT_ID'
-        secretRef: keyValueKey.azureB2cWebClientId
-      }
-      {
-        name: 'PUBLIC_AZURE_B2C_AUTHORITY'
-        secretRef: keyValueKey.azureB2cAuthority
-      }
-      {
-        name: 'PUBLIC_AZURE_B2C_REDIRECT_URI'
-        secretRef: keyValueKey.azureB2cRedirectUri
-      }
-      {
-        name: 'PUBLIC_AZURE_B2C_TENANT'
-        secretRef: keyValueKey.azureB2cTenant
-      }
-      {
-        name: 'PUBLIC_AZURE_B2C_API_ACCESS_SCOPE'
-        secretRef: keyValueKey.azureB2cApiAccessScope
-      }
-      {
-        name: 'PUBLIC_AZURE_B2C_API_CLIENT_ID'
-        secretRef: keyValueKey.azureB2cApiClientId
-      }
-      {
-        name: 'PUBLIC_AZURE_B2C_TENANT_ID'
-        secretRef: keyValueKey.azureB2cTenantId
-      }
-      {
-        name: 'PUBLIC_API_URL'
-        secretRef: keyValueKey.apiUrl
-      }
+      // {
+      //   name: 'PUBLIC_AZURE_B2C_WEB_CLIENT_ID'
+      //   secretRef: keyValueKey.azureB2cWebClientId
+      // }
+      // {
+      //   name: 'PUBLIC_AZURE_B2C_AUTHORITY'
+      //   secretRef: keyValueKey.azureB2cAuthority
+      // }
+      // {
+      //   name: 'PUBLIC_AZURE_B2C_REDIRECT_URI'
+      //   secretRef: keyValueKey.azureB2cRedirectUri
+      // }
+      // {
+      //   name: 'PUBLIC_AZURE_B2C_TENANT'
+      //   secretRef: keyValueKey.azureB2cTenant
+      // }
+      // {
+      //   name: 'PUBLIC_AZURE_B2C_API_ACCESS_SCOPE'
+      //   secretRef: keyValueKey.azureB2cApiAccessScope
+      // }
+      // {
+      //   name: 'PUBLIC_AZURE_B2C_API_CLIENT_ID'
+      //   secretRef: keyValueKey.azureB2cApiClientId
+      // }
+      // {
+      //   name: 'PUBLIC_AZURE_B2C_TENANT_ID'
+      //   secretRef: keyValueKey.azureB2cTenantId
+      // }
+      // {
+      //   name: 'PUBLIC_API_URL'
+      //   secretRef: keyValueKey.apiUrl
+      // }
     ]
   }
 }

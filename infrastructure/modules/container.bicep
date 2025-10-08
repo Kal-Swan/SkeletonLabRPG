@@ -94,7 +94,13 @@ resource apiApp 'Microsoft.App/containerApps@2025-01-01' = {
             cpu: any('0.5')
             memory: '1Gi'
           }
-          env: apiAppSettings
+          env: [
+            ...apiAppSettings
+            {
+              name: 'LlmEndpoint'
+              value: llmApp.properties.configuration.ingress.fqdn
+            }
+          ]
         }
       ]
       scale: {
@@ -142,3 +148,6 @@ resource webApp 'Microsoft.App/containerApps@2025-01-01' = {
     }
   }
 }
+
+output apiContainerPrincipleId string = apiApp.identity.principalId
+output llmContainerPrincipleId string = llmApp.identity.principalId
