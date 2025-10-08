@@ -10,11 +10,11 @@ var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
 
-var appConfiguration = builder.Configuration.GetSection(AppConfiguration.Name).Get<AppConfiguration>();
+var appConfiguration = builder.Configuration.GetSection(ApiConfiguration.Name).Get<ApiConfiguration>();
 
 builder.Configuration.AddAzureAppConfiguration(options =>
 {
-    options.Connect(new Uri(appConfiguration.Endpoint), new DefaultAzureCredential())
+    options.Connect(new Uri(appConfiguration.AzureAppConfigurationEndpoint), new DefaultAzureCredential())
         .Select(KeyFilter.Any, LabelFilter.Null)
         .Select(KeyFilter.Any, builder.Environment.EnvironmentName);
 });

@@ -18,18 +18,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddEndpoints();
 
+var appConfiguration = builder.Configuration.GetSection(ApiConfiguration.Name).Get<ApiConfiguration>();
 builder.Services.AddHttpClient<LlmService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8000/api/llm/");
+    client.BaseAddress = new Uri($"{appConfiguration.LlmEndpoint}/api/llm/");
     client.DefaultRequestHeaders.Add("Accept", "application/json");
     client.Timeout = TimeSpan.FromMinutes(5);
 });
 
-var appConfiguration = builder.Configuration.GetSection(AppConfiguration.Name).Get<AppConfiguration>();
 
 builder.Configuration.AddAzureAppConfiguration(options =>
 {
-    options.Connect(new Uri(appConfiguration.Endpoint), new DefaultAzureCredential())
+    options.Connect(new Uri(appConfiguration.AzureAppConfigurationEndpoint), new DefaultAzureCredential())
         .Select(KeyFilter.Any, LabelFilter.Null)
         .Select(KeyFilter.Any, builder.Environment.EnvironmentName)
         .ConfigureClientOptions(options =>
@@ -38,8 +38,8 @@ builder.Configuration.AddAzureAppConfiguration(options =>
         });
 });
 
-var azureAdb2CConfiguration =
-    builder.Configuration.GetSection(AzureAuthConfiguration.Name).Get<AzureAuthConfiguration>();
+// var azureAdb2CConfiguration =
+//     builder.Configuration.GetSection(AzureAuthConfiguration.Name).Get<AzureAuthConfiguration>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection(AzureAuthConfiguration.Name));
