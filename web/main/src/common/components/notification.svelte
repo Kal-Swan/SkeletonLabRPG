@@ -33,7 +33,7 @@
 </script>
 
 {#if notifications.length > 0}
-	<div class="absolute top-0 right-0 z-10 w-full p-4 md:w-1/2 lg:w-1/3">
+	<div class="fixed top-0 right-0 z-10 w-full p-4 md:w-1/2 lg:w-1/3">
 		{#each notifications as notification}
 			<div
 				style="background-color: var({getBackgroundColor(notification.type)});"

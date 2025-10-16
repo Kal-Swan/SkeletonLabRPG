@@ -139,7 +139,6 @@ resource webApp 'Microsoft.App/containerApps@2025-01-01' = {
             cpu: any('0.25')
             memory: '0.5Gi'
           }
-          env: webAppSettings
         }
       ]
       scale: {

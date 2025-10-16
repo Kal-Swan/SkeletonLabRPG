@@ -1,12 +1,9 @@
 import { json } from '@sveltejs/kit';
 import { Actions } from '@models/actions.js';
-import { serverPost, serverPut, serverDelete } from '../../../common/helpers/server-fetch.js';
+import { serverPost, serverPut, serverDelete } from '@helpers/server-fetch.js';
 import { validateRequest } from '@helpers/zod-validation.js';
 import { rpgSystemEndpoint } from './endpoint.js';
-import {
-	createRpgSystemSchema,
-	rpgSystemSchema
-} from '../../../common/models/rpgbuild/rpg-system-schema.js';
+import { createRpgSystemSchema, rpgSystemSchema } from '@models/rpgbuild/rpg-system-schema.js';
 
 export async function POST({ request }) {
 	const { action, data, activeAccount } = await request.json();

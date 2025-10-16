@@ -11,7 +11,8 @@ const config = {
 			'@helpers/*': 'src/common/helpers/*',
 			'@environment/*': 'src/common/environment/*',
 			'@lib/*': 'src/lib/*',
-			'@actions/*': 'src/actions/*'
+			'@actions/*': 'src/actions/*',
+			'@common/*': 'src/common/*'
 		}
 	}
 };

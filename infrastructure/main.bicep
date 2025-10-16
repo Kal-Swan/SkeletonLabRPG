@@ -174,8 +174,8 @@ module container 'modules/container.bicep' = {
     ]
     webAppSettings: [
       {
-        name: 'NODE_ENV'
-        value: 'UAT'
+        name: 'PUBLIC_ENV'
+        value: 'uat'
       }
       {
         name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'

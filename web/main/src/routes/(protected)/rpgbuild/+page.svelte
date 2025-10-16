@@ -13,9 +13,11 @@
 	let savedBuilds = $state<groupedSavedBuildsType | null>(builds);
 	let selectedItem = $state<buildSchemaType | null>(null);
 	let loadingBuildId = $state<string>('');
+	let selectedKey = $state<string>('');
 
-	const onBuildItemClick = (item: buildSchemaType) => {
+	const onBuildItemClick = (item: buildSchemaType, key: string) => {
 		selectedItem = item;
+		selectedKey = key;
 	};
 
 	const menu = [
@@ -32,7 +34,7 @@
 				console.log('delete clicked: ' + text);
 				loadingBuildId = item.id;
 				console.log(item);
-				const result = await clientFetch<buildSchemaType>('/build', Actions.deleteRpgBuild, {
+				const result = await clientFetch<buildSchemaType>('/rpgbuild', Actions.deleteRpgBuild, {
 					id: item.id
 				});
 
@@ -51,13 +53,13 @@
 
 	const handleItemUpdate = async (item: buildSchemaType) => {
 		loadingBuildId = item.id;
-		const result = await clientFetch<buildSchemaType>('/build', Actions.updateRpgBuild, item);
+		const result = await clientFetch<buildSchemaType>('/rpgbuild', Actions.updateRpgBuild, item);
 
+		loadingBuildId = '';
 		if (result.isSuccess) {
-			loadingBuildId = '';
 			savedBuilds = {
 				...savedBuilds,
-				[result.data!.rpgSystemId]: savedBuilds![result.data!.rpgSystemId].map((build) =>
+				[selectedKey]: savedBuilds![selectedKey].map((build) =>
 					build.id === result.data!.id ? { ...build, ...result.data } : build
 				)
 			};
@@ -78,7 +80,7 @@
 					<ItemDescription
 						{menu}
 						item={build}
-						handleItemClick={() => onBuildItemClick(build)}
+						handleItemClick={() => onBuildItemClick(build, key)}
 						title={build.name}
 						loading={loadingBuildId}
 					/>

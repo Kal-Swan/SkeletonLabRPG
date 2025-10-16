@@ -1,8 +1,8 @@
 import { json } from '@sveltejs/kit';
 import { Actions } from '@models/actions.js';
 import { z, ZodSchema } from 'zod';
-import { serverPost, serverPut } from '../../../common/helpers/server-fetch.js';
-import { buildSchema } from '../../../common/models/rpgbuild/build-schema.js';
+import { serverPost, serverPut } from '@helpers/server-fetch.js';
+import { buildSchema } from '@models/rpgbuild/build-schema.js';
 import { deleteRpgBuildEndpoint, updateRpgBuildEndpoint } from '@environment/rpg-build/endpoint.js';
 import type { ActiveAccount } from '@models/auth/account.js';
 
