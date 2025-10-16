@@ -139,6 +139,7 @@ resource webApp 'Microsoft.App/containerApps@2025-01-01' = {
             cpu: any('0.25')
             memory: '0.5Gi'
           }
+          env: webAppSettings
         }
       ]
       scale: {
@@ -150,3 +151,4 @@ resource webApp 'Microsoft.App/containerApps@2025-01-01' = {
 
 output apiContainerPrincipleId string = apiApp.identity.principalId
 output llmContainerPrincipleId string = llmApp.identity.principalId
+output webContainerPrincipleId string = webApp.identity.principalId
