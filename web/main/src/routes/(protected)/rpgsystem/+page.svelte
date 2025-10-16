@@ -6,7 +6,7 @@
 		type rpgSystemSchemaType,
 		type createRpgSystemSchemaType,
 		createRpgSystemSchema
-	} from '../../../common/models/rpgbuild/rpg-system-schema';
+	} from '@models/rpgbuild/rpg-system-schema';
 	import Label from '@components/label.svelte';
 	import { clientFetch } from '@helpers/client-fetch';
 	import { Actions } from '@models/actions';

@@ -1,24 +1,6 @@
 import { json } from '@sveltejs/kit';
-import {
-	CharacterAttributeEndpoint,
-	CharacterClassEndpoint,
-	CharacterEndpoint
-} from '@environment/character/endpoint.js';
 import { Actions } from '@models/actions.js';
-import { z, ZodSchema, type typeToFlattenedError } from 'zod';
-import { createCharacterClassSchema } from '@models/character/classes/character-class-schema.js';
-import { characterSchema, createCharacterSchema } from '@models/character/character-schema.js';
-import {
-	CharacterAttributeDamageSchema,
-	CharacterAttributeSchema
-} from '@models/character/character-attribute-schema.js';
-import type { ErrorResponse } from '@models/error-response.js';
-import {
-	serverGet,
-	serverPost,
-	serverPut,
-	serverDelete
-} from '../../../common/helpers/server-fetch.js';
+import { serverPost } from '@helpers/server-fetch.js';
 import { createBuildQuestionSchema } from '@models/rpgbuild/llm-schema.js';
 import { CreateRpgBuildsEndpoint } from '@environment/llm/endpoints.js';
 import { createRpgBuildEndpoint } from '@environment/rpg-build/endpoint.js';

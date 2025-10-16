@@ -1,10 +1,17 @@
 <script lang="ts">
+	import { accessTokenStore } from '@lib/stores/auth';
 	import '../app.css';
-	import { initMsal } from '@lib/auth/msal-client';
-	let { children } = $props();
+	import { configStore } from '@lib/stores/config-store';
+	import { get } from 'svelte/store';
 
+	let { children, data } = $props();
+	configStore.set(data.config!);
 	$effect(() => {
-		(async () => initMsal())();
+		if ($accessTokenStore) {
+			cookieStore.set('auth_token', $accessTokenStore);
+		} else {
+			cookieStore.delete('auth_token');
+		}
 	});
 </script>
 

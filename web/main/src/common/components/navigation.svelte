@@ -2,8 +2,11 @@
 	import { goto } from '$app/navigation';
 	import TextButton from './text-button.svelte';
 	import { page } from '$app/state';
-	import { signOut, activeAccount } from '@lib/auth/msal-client';
+	import { activeAccount } from '@lib/stores/auth.js';
 	import Select from './select.svelte';
+	import { configStore } from '@lib/stores/config-store.js';
+
+	let { signOut } = $props();
 
 	let isMobile = $state<boolean>(false);
 	let selectedOption = $state<string>('');
@@ -18,8 +21,8 @@
 
 	const menuOptions = [
 		{ id: '/llm', name: 'Ask AI Question' },
-		{ id: '/build', name: 'Builds' },
-		{ id: '/rpgsystem', name: 'Rpg System' },
+		{ id: '/rpgbuild', name: 'RPG Builds' },
+		{ id: '/rpgsystem', name: 'RPG Systems' },
 		{ id: 'signout', name: 'Sign Out' }
 	];
 
@@ -72,13 +75,13 @@
 				padding="1"
 				border={false}
 				text="Builds"
-				onClick={() => handleNavigation('/build')}
-				selected={selectedPath('/build')}
+				onClick={() => handleNavigation('/rpgbuild')}
+				selected={selectedPath('/rpgbuild')}
 			/>
 			<TextButton
 				padding="1"
 				border={false}
-				text="Rpg System"
+				text="Systems"
 				selected={selectedPath('/rpgsystem')}
 				onClick={() => handleNavigation('/rpgsystem')}
 			/>

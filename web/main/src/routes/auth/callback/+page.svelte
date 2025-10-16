@@ -2,7 +2,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Loading from '@components/loading.svelte';
-	import { activeAccount } from '@lib/auth/msal-client';
+	import { activeAccount } from '@lib/stores/auth';
 
 	$effect(() => {
 		// The initMsal in +layout.svelte handles the redirect and sets the activeAccount.
