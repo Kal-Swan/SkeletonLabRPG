@@ -27,7 +27,11 @@ module appConfig './modules/app-config.bicep' = {
   params: {
     appConfigurationName: appConfigName
     principalId: userGroupId
-    managedIdentities: [container.outputs.apiContainerPrincipleId, container.outputs.llmContainerPrincipleId]
+    managedIdentities: [
+      container.outputs.apiContainerPrincipleId
+      container.outputs.llmContainerPrincipleId
+      container.outputs.webContainerPrincipleId
+    ]
     databaseName: cosmosdb.outputs.databaseName
     databaseEndpoint: cosmosdb.outputs.cosmosDbUri
     databasePartitionKeyPath: cosmosdb.outputs.partitionKeyPath

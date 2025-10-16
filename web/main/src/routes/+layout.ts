@@ -5,6 +5,8 @@ import { InteractionRequiredAuthError } from '@azure/msal-browser';
 import { accessTokenStore, msalInstanceStore, defaultScopes } from '@lib/stores/auth';
 
 export const load: LayoutLoad = async ({ data }) => {
+	console.log('Layout load client');
+	console.log(data);
 	const msal = getMsalInstance(data.config);
 	msalInstanceStore.set(msal);
 
@@ -13,8 +15,10 @@ export const load: LayoutLoad = async ({ data }) => {
 
 	try {
 		const response = await msal.handleRedirectPromise();
+		console.log('handleRedirectPromise response:', response);
 		const account = response?.account || msal.getAllAccounts()[0];
 		if (response) {
+			console.log('Processing redirect response');
 			// This block runs when returning from a redirect login.
 			msal.setActiveAccount(response.account);
 			// The access token from the redirect response is fresh.
@@ -26,8 +30,10 @@ export const load: LayoutLoad = async ({ data }) => {
 			// cookieStore.set('auth_token', response.accessToken);
 			return;
 		}
-
+		console.log('No redirect response, checking existing accounts');
+		console.log(account);
 		if (account) {
+			console.log('Found existing account, acquiring token silently');
 			msal.setActiveAccount(account);
 			// This block runs on a page load when the user is already signed in.
 			// Silently acquire a token to ensure it's not expired.
@@ -44,12 +50,14 @@ export const load: LayoutLoad = async ({ data }) => {
 			// cookieStore.set('auth_token', silentTokenResult.accessToken);
 		} else {
 			// No account found, ensure we are in a signed-out state.
+			console.log('No account found, clearing authentication state');
 			msal.setActiveAccount(null);
 			activeAccount.set(null);
 			accessTokenStore.set(null);
 			// cookieStore.delete('auth_token');
 		}
 	} catch (error) {
+		console.error('Error during MSAL authentication', error);
 		if (error instanceof InteractionRequiredAuthError) {
 			// Fallback to interactive login if silent acquisition fails
 			msal.acquireTokenRedirect({
@@ -67,6 +75,7 @@ export const load: LayoutLoad = async ({ data }) => {
 
 	const signIn = async () => {
 		console.log('signIn called');
+		console.log(data.config.b2c.apiAccessScope);
 		if (msalReady) {
 			console.log('sign in');
 			await msal.loginRedirect({
