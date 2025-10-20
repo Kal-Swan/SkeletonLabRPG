@@ -14,7 +14,7 @@ export function getMsalInstance(config: Configuration) {
 			},
 			cache: {
 				cacheLocation: 'localStorage',
-				storeAuthStateInCookie: false
+				storeAuthStateInCookie: config.b2c.storeAuthStateInCookie
 			}
 		});
 	}
