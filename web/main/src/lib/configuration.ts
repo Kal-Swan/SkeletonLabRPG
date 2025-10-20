@@ -45,4 +45,5 @@ interface B2C {
 	tenant: string;
 	tenantId: string;
 	webClientId: string;
+	storeAuthStateInCookie: boolean;
 }
