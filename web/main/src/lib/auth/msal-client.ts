@@ -4,6 +4,7 @@ let msalInstance: PublicClientApplication | null = null;
 export function getMsalInstance(config: Configuration) {
 	if (!msalInstance) {
 		console.log('Creating new MSAL instance');
+		console.log(config);
 		msalInstance = new PublicClientApplication({
 			auth: {
 				clientId: config.b2c.webClientId,
