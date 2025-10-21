@@ -1,9 +1,11 @@
 import { redirect } from '@sveltejs/kit';
 import { rpgSystemEndpoint } from './endpoint';
 
-export const load = async ({ locals }) => {
+export const load = async ({ locals }: { locals: App.Locals }) => {
+	console.log('RPG System layout server load - locals');
+	console.log(locals);
 	if (!locals.token) {
-		console.log('error');
+		console.log('No token found in rpgsystem route in locals, redirecting to login');
 		throw redirect(302, '/login');
 	}
 
