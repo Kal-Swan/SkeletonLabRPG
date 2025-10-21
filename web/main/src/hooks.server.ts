@@ -18,21 +18,28 @@ const JWKS = createRemoteJWKSet(new URL(jwksUri));
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const token = event.cookies.get('auth_token');
+	console.log('hooks - handle - token from cookies:');
+	console.log(token);
 
 	if (token) {
+		console.log('Verifying token');
 		try {
 			await jwtVerify(token, JWKS, {
 				issuer,
 				audience: apiClientId
 			});
+			console.log('Token is valid');
 
 			event.locals.token = token;
 			event.locals.isAuthenticated = true;
 		} catch (err) {
+			console.log('Token verification failed:', err);
+			console.error(err);
 			event.locals.token = null;
 			event.locals.isAuthenticated = false;
 		}
 	} else {
+		console.log('No token found in cookies');
 		event.locals.token = null;
 		event.locals.isAuthenticated = false;
 	}
