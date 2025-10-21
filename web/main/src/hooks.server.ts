@@ -9,6 +9,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 	console.log('hooks');
 	console.log(get(configStore));
 	const config = get(configStore);
+
+	if (config?.b2c == null) {
+		console.log('No config found in store, skipping auth handling');
+		return resolve(event);
+	}
+
 	const token = event.cookies.get('auth_token');
 	console.log(token);
 
