@@ -3,6 +3,7 @@ import { activeAccount, msalReady } from '@lib/stores/auth';
 import type { LayoutLoad } from './$types';
 import { InteractionRequiredAuthError } from '@azure/msal-browser';
 import { accessTokenStore, msalInstanceStore, defaultScopes } from '@lib/stores/auth';
+import { get } from 'svelte/store';
 
 export const load: LayoutLoad = async ({ data }) => {
 	console.log('Layout load client');
@@ -15,7 +16,8 @@ export const load: LayoutLoad = async ({ data }) => {
 
 	try {
 		const response = await msal.handleRedirectPromise();
-		console.log('handleRedirectPromise response:', response);
+		console.log('handleRedirectPromise response:');
+		console.log(response);
 		const account = response?.account || msal.getAllAccounts()[0];
 		if (response) {
 			console.log('Processing redirect response');
@@ -76,7 +78,7 @@ export const load: LayoutLoad = async ({ data }) => {
 	const signIn = async () => {
 		console.log('signIn called');
 		console.log(data.config.b2c.apiAccessScope);
-		if (msalReady) {
+		if (get(msalReady)) {
 			console.log('sign in');
 			await msal.loginRedirect({
 				scopes: [...defaultScopes, data.config.b2c.apiAccessScope]
@@ -86,7 +88,7 @@ export const load: LayoutLoad = async ({ data }) => {
 
 	const signOut = async () => {
 		console.log('signOut called');
-		if (msalReady) {
+		if (get(msalReady)) {
 			await msal.logoutRedirect({
 				postLogoutRedirectUri: '/login'
 			});
