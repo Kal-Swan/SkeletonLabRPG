@@ -2,31 +2,27 @@
 import { jwtVerify, createRemoteJWKSet } from 'jose';
 import { type Handle } from '@sveltejs/kit';
 import * as v from '$env/dynamic/public';
-// import { getB2CSettings } from '@lib/auth/configuration';
-// import { configStore } from '@lib/stores/config-store';
-console.log('hooks');
-// const settings = await getB2CSettings();
-
-const tenantName = v.env.PUBLIC_AZURE_B2C_TENANT;
-const apiClientId = v.env.PUBLIC_AZURE_B2C_API_CLIENT_ID;
-const tenantId = v.env.PUBLIC_AZURE_B2C_TENANT_ID;
-
-const issuer = `https://${tenantId}.ciamlogin.com/${tenantId}/v2.0`;
-const jwksUri = `https://${tenantName}/${tenantId}/discovery/v2.0/keys`;
-
-const JWKS = createRemoteJWKSet(new URL(jwksUri));
+import { configStore } from '@lib/stores/config-store';
+import { get } from 'svelte/store';
 
 export const handle: Handle = async ({ event, resolve }) => {
+	console.log('hooks');
+	console.log(get(configStore));
+	const config = get(configStore);
 	const token = event.cookies.get('auth_token');
-	console.log('hooks - handle - token from cookies:');
 	console.log(token);
+
+	const issuer = `https://${config.b2c.tenantId}.ciamlogin.com/${config.b2c.tenantId}/v2.0`;
+	const jwksUri = `https://${config.b2c.tenant}/${config.b2c.tenantId}/discovery/v2.0/keys`;
+
+	const JWKS = createRemoteJWKSet(new URL(jwksUri));
 
 	if (token) {
 		console.log('Verifying token');
 		try {
 			await jwtVerify(token, JWKS, {
 				issuer,
-				audience: apiClientId
+				audience: config.b2c.apiClientId
 			});
 			console.log('Token is valid');
 
