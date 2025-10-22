@@ -3,9 +3,13 @@ from pydantic import BaseModel
 from .azure_llm_logic import process_data
 # nest_asyncio is required to allow LangChain to run its own async functions
 # within the event loop already managed by FastAPI/Uvicorn.
-import nest_asyncio
+import os
 
-nest_asyncio.apply()
+DEBUG = os.getenv("DEBUG", "true").lower() == "true"
+if DEBUG:
+    import nest_asyncio
+    nest_asyncio.apply()
+
 app = FastAPI()
 
 class QuestionRequest(BaseModel):
