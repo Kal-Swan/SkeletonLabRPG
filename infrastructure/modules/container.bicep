@@ -98,7 +98,7 @@ resource apiApp 'Microsoft.App/containerApps@2025-01-01' = {
             ...apiAppSettings
             {
               name: 'LlmEndpoint'
-              value: llmApp.properties.configuration.ingress.fqdn
+              value: 'https://${llmApp.properties.configuration.ingress.fqdn}'
             }
           ]
         }
@@ -139,7 +139,10 @@ resource webApp 'Microsoft.App/containerApps@2025-01-01' = {
             cpu: any('0.25')
             memory: '0.5Gi'
           }
-          env: webAppSettings
+          env: [...webAppSettings, {
+            name: 'PUBLIC_API_URL'
+            value: 'https://${apiApp.properties.configuration.ingress.fqdn}'
+          }]
         }
       ]
       scale: {

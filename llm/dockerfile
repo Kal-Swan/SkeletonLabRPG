@@ -11,4 +11,4 @@ COPY . .
 # gunicorn is a production server for running Python web applications
 # uvicorn is an ASGI server worker for Python web applications
 
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "main:app", "-k", "uvicorn.workers.UvicornWorker", "--workers", "${WORKERS:-1}"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "main:app", "-k", "uvicorn.workers.UvicornWorker", "--workers", "1"]
