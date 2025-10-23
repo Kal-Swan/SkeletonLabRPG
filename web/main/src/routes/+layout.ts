@@ -35,6 +35,7 @@ export const load: LayoutLoad = async ({ data }) => {
 		console.log('No redirect response, checking existing accounts');
 		console.log(account);
 		if (account) {
+			console.log('Account found');
 			console.log('Found existing account, acquiring token silently');
 			msal.setActiveAccount(account);
 			// This block runs on a page load when the user is already signed in.

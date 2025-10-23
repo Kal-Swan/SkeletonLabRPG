@@ -9,6 +9,9 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
 		throw redirect(302, '/login');
 	}
 
+	console.log('Fetching RPG systems from endpoint with token');
+	console.log(locals.token);
+
 	const response = await fetch(rpgSystemEndpoint, {
 		headers: {
 			Authorization: `Bearer ${locals.token}`

@@ -16,6 +16,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	const token = event.cookies.get('auth_token');
+	console.log('Token from cookies:');
 	console.log(token);
 
 	const issuer = `https://${config.b2c.tenantId}.ciamlogin.com/${config.b2c.tenantId}/v2.0`;
