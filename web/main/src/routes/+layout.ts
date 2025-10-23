@@ -5,11 +5,9 @@ import { InteractionRequiredAuthError } from '@azure/msal-browser';
 import { accessTokenStore, msalInstanceStore, defaultScopes } from '@lib/stores/auth';
 import { get } from 'svelte/store';
 
-export const load: LayoutLoad = async ({ data, locals }) => {
+export const load: LayoutLoad = async ({ data }) => {
 	console.log('Layout load client');
 	console.log(data);
-	console.log('Locals:');
-	console.log(locals);
 	const msal = getMsalInstance(data.config);
 	msalInstanceStore.set(msal);
 
@@ -36,20 +34,20 @@ export const load: LayoutLoad = async ({ data, locals }) => {
 		}
 		console.log('No redirect response, checking existing accounts');
 		console.log(account);
-		if (account || data.token) {
+		if (account) {
 			console.log('Found existing account, acquiring token silently');
+			msal.setActiveAccount(account);
 			// This block runs on a page load when the user is already signed in.
 			// Silently acquire a token to ensure it's not expired.
 			const silentTokenResult = await msal.acquireTokenSilent({
 				scopes: [...defaultScopes, data.config.b2c.apiAccessScope],
 				account: account
 			});
-			
+
 			activeAccount.set({
 				account: silentTokenResult.account,
 				token: silentTokenResult.accessToken
 			});
-			msal.setActiveAccount(silentTokenResult.account);
 			accessTokenStore.set(silentTokenResult.accessToken);
 			// cookieStore.set('auth_token', silentTokenResult.accessToken);
 		} else {
