@@ -7,14 +7,17 @@ namespace SkeletonLabRpg.Api.Llm.External;
 public class LlmService
 {
     private readonly HttpClient _httpClient;
-    
-    public LlmService(HttpClient httpClient)
+    private readonly ILogger<LlmService> _logger;
+
+    public LlmService(HttpClient httpClient, ILogger<LlmService> logger)
     {
         _httpClient = httpClient;
+        _logger = logger;
     }
 
     public async Task<BuildResponse> GetBuildsByQuestion(string question, string rpgSystem)
     {
+        _logger.LogInformation("LlmService, GetBuildsByQuestion arguments: Question: {QUESTION}, RPG System: {RPGSYSTEM}  ", question, rpgSystem);
         var requestBody = new RpgQuestionRequest { Question = question, RpgSystem = rpgSystem };
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync("question", requestBody);
         response.EnsureSuccessStatusCode();
