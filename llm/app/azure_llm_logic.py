@@ -51,6 +51,8 @@ prompt_template = ChatPromptTemplate.from_template(instruction).partial(format_i
 
 _faiss_db_cache = {}
 
+# test
+
 async def get_blob_bytes(blob_name: str) -> bytes:
     try:
         if not blobEndpoint:
