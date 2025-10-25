@@ -43,7 +43,7 @@ resource llmApp 'Microsoft.App/containerApps@2025-01-01' = {
       ]
       ingress: {
         external: true
-        targetPort: 80
+        targetPort: 8000
       }
     }
     template: {
@@ -82,7 +82,7 @@ resource apiApp 'Microsoft.App/containerApps@2025-01-01' = {
       ]
       ingress: {
         external: true
-        targetPort: 80
+        targetPort: 8080
       }
     }
     template: {

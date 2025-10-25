@@ -18,6 +18,7 @@ from .prompt_instructions import instruction
 from .constants import bg3, daggerheart
 from azure.storage.blob import BlobServiceClient
 from PyPDF2 import PdfReader
+import requests
 
 load_dotenv()
 
@@ -63,8 +64,13 @@ async def get_blob_bytes(blob_name: str) -> bytes:
     except Exception as e:
         raise ValueError(f"Failed to retrieve file from blob: {e}")
 
+def test_fetch():
+    r = requests.get("https://bg3.wiki/wiki/Gale", headers={"User-Agent": "MyLlmApp/1.0"})
+    print(r.status_code, len(r.text))
+
 
 async def process_data(question: str, rpg_system: str):
+    test_fetch()
     if rpg_system not in  _faiss_db_cache:
         raw_documents = []
 
