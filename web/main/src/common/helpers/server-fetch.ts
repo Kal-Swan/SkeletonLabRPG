@@ -9,6 +9,13 @@ async function baseServerFetch(
 	if (token) {
 		headers.set('Authorization', `Bearer ${token}`);
 	}
+	console.log('base server fetch');
+	console.log('path');
+	console.log(path);
+	console.log('options');
+	console.log(options);
+	console.log('headers');
+	console.log(headers);
 	return fetch(path, { ...options, headers });
 }
 

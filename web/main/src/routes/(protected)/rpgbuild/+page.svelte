@@ -40,9 +40,11 @@
 
 				if (result.isSuccess) {
 					loadingBuildId = '';
+					console.log('deleted build');
+					console.log(item.rpgSystemId);
 					savedBuilds = {
 						...savedBuilds,
-						[item.rpgSystemId]: savedBuilds![item.rpgSystemId].filter(
+						[selectedKey]: savedBuilds![selectedKey].filter(
 							(build) => build.id !== item.id
 						)
 					};
@@ -69,6 +71,12 @@
 	const handleItemCancel = () => {
 		selectedItem = null;
 	};
+
+	$effect(() => {
+		console.log('savedBuilds changed: ');
+		console.log(savedBuilds);
+	});
+
 </script>
 
 {#if savedBuilds && !selectedItem}

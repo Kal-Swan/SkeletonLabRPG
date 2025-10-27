@@ -1,7 +1,7 @@
 import { getAllRpgBuildsEndpoint } from '@environment/rpg-build/endpoint';
 import { redirect } from '@sveltejs/kit';
 
-export const load = async ({ locals }) => {
+export const load = async ({ locals }: {locals: { token: string }}) => {
 	if (!locals.token) {
 		throw redirect(302, '/login');
 	}

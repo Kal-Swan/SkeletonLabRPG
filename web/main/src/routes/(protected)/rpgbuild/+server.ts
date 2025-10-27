@@ -1,9 +1,9 @@
 import { json } from '@sveltejs/kit';
 import { Actions } from '@models/actions.js';
 import { z, ZodSchema } from 'zod';
-import { serverPost, serverPut } from '@helpers/server-fetch.js';
+import { serverDelete, serverPost, serverPut } from '@helpers/server-fetch.js';
 import { buildSchema } from '@models/rpgbuild/build-schema.js';
-import { deleteRpgBuildEndpoint, updateRpgBuildEndpoint } from '@environment/rpg-build/endpoint.js';
+import { baseBuildsEndpoint, deleteRpgBuildEndpoint, updateRpgBuildEndpoint } from '@environment/rpg-build/endpoint.js';
 import type { ActiveAccount } from '@models/auth/account.js';
 
 function validationRequestData<T extends ZodSchema>(
@@ -37,8 +37,13 @@ function validationRequestData<T extends ZodSchema>(
 	return { success: true, data: validationResult.data, error: null };
 }
 
-export async function POST({ request, locals }) {
+export async function POST({ request } : any) {
+	console.log('server side rpg build');
 	const { action, data, activeAccount } = await request.json();
+
+	console.log(action);
+	console.log(activeAccount);
+	console.log(data);
 
 	switch (action) {
 		case Actions.updateRpgBuild:
@@ -64,6 +69,6 @@ const updateRpgBuild = async (data: any, activeAccount: ActiveAccount) => {
 };
 
 const deleteRpgBuild = async (data: any, activeAccount: ActiveAccount) => {
-	const response = await serverPost(`${deleteRpgBuildEndpoint}`, data, activeAccount);
+	const response = await serverDelete(`${baseBuildsEndpoint}/${data.id}`, activeAccount);
 	return response;
 };

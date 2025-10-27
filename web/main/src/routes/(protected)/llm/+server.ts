@@ -8,7 +8,7 @@ import { buildSchema } from '@models/rpgbuild/build-schema.js';
 import { validateRequest } from '@helpers/zod-validation.js';
 import type { ActiveAccount } from '@models/auth/account.js';
 
-export async function POST({ request, locals }) {
+export async function POST({ request }: any) {
 	console.log('server side llm');
 	const { action, data, activeAccount } = await request.json();
 
