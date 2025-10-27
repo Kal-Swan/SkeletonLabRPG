@@ -9,26 +9,33 @@ import { validateRequest } from '@helpers/zod-validation.js';
 import type { ActiveAccount } from '@models/auth/account.js';
 
 export async function POST({ request, locals }) {
+	console.log('server side llm');
 	const { action, data, activeAccount } = await request.json();
 
+	console.log(action);
+	console.log(activeAccount);
 	switch (action) {
 		case Actions.createRpgBuilds:
+			console.log('before validation');
 			var validationResult = validateRequest(
 				data,
 				createBuildQuestionSchema,
 				Actions.createRpgBuilds
 			);
 
+
 			if (!validationResult.success) {
 				return validationResult.error!;
 			}
+
+			console.log('after validation');
 
 			const response = await serverPost(
 				`${CreateRpgBuildsEndpoint}`,
 				{ question: validationResult.data.question, rpgSystem: validationResult.data.rpgSystem },
 				activeAccount
 			);
-
+			console.log('after server post response');
 			return response;
 		case Actions.saveRpgBuild:
 			return saveRpgBuild(data, activeAccount);
