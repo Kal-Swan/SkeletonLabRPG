@@ -52,8 +52,8 @@ resource llmApp 'Microsoft.App/containerApps@2025-01-01' = {
           name: 'llm'
           image: '${acr.properties.loginServer}/${llmAppName}:latest'
           resources: {
-            cpu: any('0.5')
-            memory: '1Gi'
+            cpu: any('1.0')
+            memory: '2.0Gi'
           }
           env: llmApiAppSettings
         }
