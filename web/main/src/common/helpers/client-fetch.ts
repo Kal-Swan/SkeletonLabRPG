@@ -47,6 +47,12 @@ export const clientFetch = async <TResult>(
 		console.log('clientfetch body');
 		console.log(bodyPayload);
 
+		console.log('path');
+		console.log(path);	
+
+		console.log('data');
+		console.log(data);
+
 		const response = await fetch(path, {
 			method: 'POST',
 			body: JSON.stringify(bodyPayload),
