@@ -91,7 +91,13 @@ jobs:
 
       - name: Update ${{inputs.container_type}} Container App image to trigger new revision
         run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+          BUILD_NUMBER="${{ github.run_number }}-${SHORT_SHA}"
+          IMAGE_NAME="${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:$BUILD_NUMBER"
+
+          echo "Deploying image: $IMAGE_NAME"
+
           az containerapp update \
             --name $CONTAINER_NAME \
-            --resource-group ${{ secrets.RESOURCE_GROUP}} \
-            --image ${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:latest
+            --resource-group ${{ secrets.RESOURCE_GROUP }} \
+            --image $IMAGE_NAME
