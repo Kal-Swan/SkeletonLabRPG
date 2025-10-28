@@ -1,5 +1,6 @@
 <script lang="ts">
 	const { data } = $props();
+	console.log('testing deployment');
 </script>
 
 <div class="m-2">
