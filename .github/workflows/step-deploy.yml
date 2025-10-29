@@ -71,11 +71,20 @@ jobs:
 
       - name: Build and push ${{inputs.container_type}} image
         run: |
+
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+          BUILD_NUMBER="${{ github.run_number }}-${SHORT_SHA}"
+          IMAGE_NAME="${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:$BUILD_NUMBER"
+
+          echo "Building image: $IMAGE_NAME"
+
           docker build \
-          -t ${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:latest \
+          -t $IMAGE_NAME
           -f ${{ github.workspace }}/${{ inputs.dockerfile_path }} \
           ${{ github.workspace }}/${{ inputs.context_path }}
-          docker push ${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:latest
+          docker push $IMAGE_NAME
+
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV 
 
       - name: Debug Container App Info
         run: |
@@ -91,10 +100,6 @@ jobs:
 
       - name: Update ${{inputs.container_type}} Container App image to trigger new revision
         run: |
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
-          BUILD_NUMBER="${{ github.run_number }}-${SHORT_SHA}"
-          IMAGE_NAME="${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:$BUILD_NUMBER"
-
           echo "Deploying image: $IMAGE_NAME"
 
           az containerapp update \
