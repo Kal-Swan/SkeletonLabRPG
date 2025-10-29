@@ -79,9 +79,10 @@ jobs:
           echo "Building image: $IMAGE_NAME"
 
           docker build \
-          -t $IMAGE_NAME
+          -t $IMAGE_NAME \
           -f ${{ github.workspace }}/${{ inputs.dockerfile_path }} \
           ${{ github.workspace }}/${{ inputs.context_path }}
+          
           docker push $IMAGE_NAME
 
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV 
