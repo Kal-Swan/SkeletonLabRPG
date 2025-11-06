@@ -96,7 +96,7 @@ jobs:
           echo "Image: ${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:latest"
 
       - name: Verify Container Web App presence
-        run: az containerapp show --name ${{ secrets.WEB_CONTAINER_NAME }} --resource-group skeletonlabrpg-uat-rg
+        run: az containerapp show --name ${{ secrets.LLM_CONTAINER_NAME }} --resource-group skeletonlabrpg-uat-rg
 
       - name: List all container apps in resource group
         run: az containerapp list --resource-group ${{ secrets.RESOURCE_GROUP}} --output table
