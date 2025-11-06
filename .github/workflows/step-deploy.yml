@@ -50,6 +50,8 @@ jobs:
           else
             echo "CONTAINER_NAME=${{ secrets.WEB_CONTAINER_NAME }}" >> $GITHUB_ENV
           fi
+      - name: Display Container Name
+        run: echo "Container Name is $CONTAINER_NAME"
       - name: "azure login"
         uses: azure/login@v2
         with:
