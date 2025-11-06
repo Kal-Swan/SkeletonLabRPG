@@ -24,7 +24,6 @@ resource containerEnv 'Microsoft.App/managedEnvironments@2025-01-01' = {
   name: containerEnvName
   location: resourceGroup().location
   properties: {
-    daprAIInstrumentationKey: ''
   }
 }
 
@@ -44,7 +43,7 @@ resource llmApp 'Microsoft.App/containerApps@2025-01-01' = {
         }
       ]
       ingress: {
-        external: false
+        external: true
         targetPort: 8000
       }
     }
@@ -83,7 +82,7 @@ resource apiApp 'Microsoft.App/containerApps@2025-01-01' = {
         }
       ]
       ingress: {
-        external: false
+        external: true
         targetPort: 8080
       }
     }
@@ -153,6 +152,36 @@ resource webApp 'Microsoft.App/containerApps@2025-01-01' = {
     }
   }
 }
+
+// resource llmAcrPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+//   name: guid(acr.id, llmApp.id, 'AcrPull')
+//   scope: acr
+//   properties: {
+//     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d') // AcrPull
+//     principalId: llmApp.identity.principalId
+//     principalType: 'ServicePrincipal'
+//   }
+// }
+
+// resource apiAcrPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+//   name: guid(acr.id, apiApp.id, 'AcrPull')
+//   scope: acr
+//   properties: {
+//     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d') // AcrPull
+//     principalId: apiApp.identity.principalId
+//     principalType: 'ServicePrincipal'
+//   }
+// }
+
+// resource webAcrPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+//   name: guid(acr.id, webApp.id, 'AcrPull')
+//   scope: acr
+//   properties: {
+//     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d') // AcrPull
+//     principalId: webApp.identity.principalId
+//     principalType: 'ServicePrincipal'
+//   }
+// }
 
 output apiContainerPrincipleId string = apiApp.identity.principalId
 output llmContainerPrincipleId string = llmApp.identity.principalId
