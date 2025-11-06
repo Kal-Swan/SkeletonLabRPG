@@ -6,6 +6,8 @@ param llmAppName string
 param apiAppSettings array
 param webAppSettings array
 param llmApiAppSettings array
+// param subnetId string
+param imageTag string = 'latest'
 
 resource acr 'Microsoft.ContainerRegistry/registries@2025-04-01' = {
   name: acrName
@@ -42,7 +44,7 @@ resource llmApp 'Microsoft.App/containerApps@2025-01-01' = {
         }
       ]
       ingress: {
-        external: true
+        external: false
         targetPort: 8000
       }
     }
@@ -50,7 +52,7 @@ resource llmApp 'Microsoft.App/containerApps@2025-01-01' = {
       containers: [
         {
           name: 'llm'
-          image: '${acr.properties.loginServer}/${llmAppName}:latest'
+          image: '${acr.properties.loginServer}/${llmAppName}:${imageTag}'
           resources: {
             cpu: any('1.0')
             memory: '2.0Gi'
@@ -81,7 +83,7 @@ resource apiApp 'Microsoft.App/containerApps@2025-01-01' = {
         }
       ]
       ingress: {
-        external: true
+        external: false
         targetPort: 8080
       }
     }
@@ -89,7 +91,7 @@ resource apiApp 'Microsoft.App/containerApps@2025-01-01' = {
       containers: [
         {
           name: 'api'
-          image: '${acr.properties.loginServer}/${apiAppName}:latest'
+          image: '${acr.properties.loginServer}/${apiAppName}:${imageTag}'
           resources: {
             cpu: any('0.5')
             memory: '1Gi'
@@ -97,7 +99,7 @@ resource apiApp 'Microsoft.App/containerApps@2025-01-01' = {
           env: [
             ...apiAppSettings
             {
-              name: 'LlmEndpoint'
+              name: 'Configuration__LlmEndpoint'
               value: 'https://${llmApp.properties.configuration.ingress.fqdn}'
             }
           ]
@@ -134,7 +136,7 @@ resource webApp 'Microsoft.App/containerApps@2025-01-01' = {
       containers: [
         {
           name: 'frontend'
-          image: '${acr.properties.loginServer}/${webAppName}:latest'
+          image: '${acr.properties.loginServer}/${webAppName}:${imageTag}'
           resources: {
             cpu: any('0.25')
             memory: '0.5Gi'
@@ -155,3 +157,5 @@ resource webApp 'Microsoft.App/containerApps@2025-01-01' = {
 output apiContainerPrincipleId string = apiApp.identity.principalId
 output llmContainerPrincipleId string = llmApp.identity.principalId
 output webContainerPrincipleId string = webApp.identity.principalId
+output llmContainerId string = llmApp.id
+output apiContainerId string = apiApp.id
