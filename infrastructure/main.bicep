@@ -11,17 +11,6 @@ param blobContainerNames array = [
   'characterattributemltraining'
 ]
 
-param keyValueKey object = {
-  azureB2cWebClientId: 'azure-b2c-web-client-id'
-  azureB2cAuthority: 'azure-b2c-authority'
-  azureB2cRedirectUri: 'azure-b2c-redirect-uri'
-  azureB2cTenant: 'azure-b2c-tenant'
-  azureB2cApiAccessScope: 'azure-b2c-api-access-scope'
-  azureB2cApiClientId: 'azure-b2c-api-client-id'
-  azureB2cTenantId: 'azure-b2c-tenant-id'
-  apiUrl: 'api-url'
-}
-
 module appConfig './modules/app-config.bicep' = {
   name: 'appConfigModule'
   params: {
@@ -214,3 +203,29 @@ module openAi './modules/openai.bicep' = {
     managedIdentities: [container.outputs.llmContainerPrincipleId]
   }
 }
+
+// module vnet './modules/vnet.bicep' = {
+//   name: 'vnetModule'
+//   params: {
+//     vnetName: '${prefix}-${environment}-vnet'
+//     prefix: '${prefix}-${environment}'
+//     nsgId: nsg.outputs.nsgId
+//   }
+// }
+
+// module nsg './modules/nsg.bicep' = {
+//   name: 'nsgModule'
+//   params: {
+//     prefix: '${prefix}-${environment}'
+//   }
+// }
+
+// module pe './modules/pe.bicep' = {
+//   name: 'peModule'
+//   params: {
+//     prefix: '${prefix}-${environment}'
+//     subnetId: vnet.outputs.subnetId
+//     llmContainerId: container.outputs.llmContainerId
+//     apiContainerId: container.outputs.apiContainerId
+//   }
+// }

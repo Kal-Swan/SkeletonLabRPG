@@ -74,7 +74,7 @@ jobs:
 
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
           BUILD_NUMBER="${{ github.run_number }}-${SHORT_SHA}"
-          IMAGE_NAME="${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:$BUILD_NUMBER"
+          IMAGE_NAME="${{ secrets.ACR_LOGIN_SERVER_NAME }}/$CONTAINER_NAME:latest"
 
           echo "Building image: $IMAGE_NAME"
 
