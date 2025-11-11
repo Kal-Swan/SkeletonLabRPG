@@ -93,7 +93,7 @@ jobs:
         run: |
           echo "Resource Group: ${{ secrets.RESOURCE_GROUP }}"
           echo "Container Name: $CONTAINER_NAME"
-          echo "Image: $IMAGE_NAME
+          echo "Image: $IMAGE_NAME"
 
       - name: Verify Container Web App presence
         run: az containerapp show --name ${{ secrets.LLM_CONTAINER_NAME }} --resource-group skeletonlabrpg-uat-rg
