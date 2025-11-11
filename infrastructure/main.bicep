@@ -28,6 +28,7 @@ module appConfig './modules/app-config.bicep' = {
     queueServiceEndpoint: storage.outputs.queueServiceEndpoint
     queueNames: queueNames
     blobContainerNames: blobContainerNames
+    webContainerUrl: container.outputs.webContainerUrl
   }
 }
 
@@ -45,65 +46,65 @@ module apiAppInsights './modules/app-insights.bicep' = {
   }
 }
 
-module api './modules/web.bicep' = {
-  name: 'apiModule'
-  params: {
-    isApp: false
-    fxVersion: 'dotnetcore|8.0'
-    appServicePlanName: '${prefix}-api-${environment}-appserviceplan'
-    webAppName: '${prefix}-api-${environment}-appservice'
-    appSettings: [
-      {
-        name: 'ASPNETCORE_ENVIRONMENT'
-        value: 'UAT'
-      }
-      {
-        name: 'AppConfiguration__Endpoint'
-        value: appConfigEndpoint
-      }
-      {
-        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-        value: apiAppInsights.outputs.connectionString
-      }
-      {
-        name: 'InstrumentationEngineExtensionVersion'
-        value: '~3'
-      }
-    ]
-  }
-}
+// module api './modules/web.bicep' = {
+//   name: 'apiModule'
+//   params: {
+//     isApp: false
+//     fxVersion: 'dotnetcore|8.0'
+//     appServicePlanName: '${prefix}-api-${environment}-appserviceplan'
+//     webAppName: '${prefix}-api-${environment}-appservice'
+//     appSettings: [
+//       {
+//         name: 'ASPNETCORE_ENVIRONMENT'
+//         value: 'UAT'
+//       }
+//       {
+//         name: 'AppConfiguration__Endpoint'
+//         value: appConfigEndpoint
+//       }
+//       {
+//         name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+//         value: apiAppInsights.outputs.connectionString
+//       }
+//       {
+//         name: 'InstrumentationEngineExtensionVersion'
+//         value: '~3'
+//       }
+//     ]
+//   }
+// }
 
-module web './modules/web.bicep' = {
-  name: 'webModule'
-  params: {
-    isApp: true
-    fxVersion: 'node|20-lts'
-    appServicePlanName: '${prefix}-web-${environment}-appserviceplan'
-    webAppName: '${prefix}-web-${environment}-appservice'
-    appSettings: [
-      {
-        name: 'PUBLIC_API_URL'
-        value: api.outputs.webAppUrl
-      }
-      {
-        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-        value: webAppInsights.outputs.connectionString
-      }
-      {
-        name: 'InstrumentationEngineExtensionVersion'
-        value: 'latest'
-      }
-      {
-        name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
-        value: '~3'
-      }
-      {
-        name: 'NODE_ENV'
-        value: 'UAT'
-      }
-    ]
-  }
-}
+// module web './modules/web.bicep' = {
+//   name: 'webModule'
+//   params: {
+//     isApp: true
+//     fxVersion: 'node|20-lts'
+//     appServicePlanName: '${prefix}-web-${environment}-appserviceplan'
+//     webAppName: '${prefix}-web-${environment}-appservice'
+//     appSettings: [
+//       {
+//         name: 'PUBLIC_API_URL'
+//         value: api.outputs.webAppUrl
+//       }
+//       {
+//         name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+//         value: webAppInsights.outputs.connectionString
+//       }
+//       {
+//         name: 'InstrumentationEngineExtensionVersion'
+//         value: 'latest'
+//       }
+//       {
+//         name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+//         value: '~3'
+//       }
+//       {
+//         name: 'NODE_ENV'
+//         value: 'UAT'
+//       }
+//     ]
+//   }
+// }
 
 module cosmosdb './modules/cosmosdb.bicep' = {
   name: 'cosmosdbModule'
@@ -111,7 +112,7 @@ module cosmosdb './modules/cosmosdb.bicep' = {
     accountName: '${prefix}-${environment}-cosmosdb'
     location: resourceGroup().location
     databaseName: 'skeletonlabrpg'
-    managedIdentities: [api.outputs.webAppIdentityPrincipalId]
+    managedIdentities: [container.outputs.apiContainerPrincipleId]
   }
 }
 

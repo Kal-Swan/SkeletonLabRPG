@@ -9,6 +9,7 @@ param blobServiceEndpoint string
 param queueServiceEndpoint string
 param queueNames array
 param blobContainerNames array
+param webContainerUrl string
 
 var queueConfigs = reduce(
   queueNames,
@@ -35,6 +36,10 @@ var blobConfigs = reduce(
 )
 
 var configs = union(queueConfigs, blobConfigs, {
+  'Cors:Web': {
+    default: 'http://localhost:5173'
+    uat: webContainerUrl
+  }
   'Cosmosdb:DatabaseName': {
     default: databaseName
     uat: databaseName
