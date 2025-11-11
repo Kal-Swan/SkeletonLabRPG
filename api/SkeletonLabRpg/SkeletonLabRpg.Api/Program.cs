@@ -51,14 +51,16 @@ builder.Services.AddAuthorization(options =>
     }
 });
 
-// builder.Services.AddTransient<IClaimsTransformation, RoleClaimsTransformer>();
 builder.Services.AddScoped<AccountDetails>();
 builder.Services.RegisterApplicationInsights(builder);
 builder.Services.ConfigureCommonServices(builder.Configuration);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.Configure<SkeletonLabRpgConfiguration>(builder.Configuration.GetSection(SkeletonLabRpgConfiguration.Name));
 builder.Services.AddCors();
-//builder.Services.AddControllers();
+
+var corsConfiguration =
+    builder.Configuration.GetSection(CorsConfiguration.Name).Get<CorsConfiguration>();
+
 
 var app = builder.Build();
 
@@ -71,23 +73,18 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseHttpsRedirection();
-    //app.UseMiddleware<ExceptionLoggingMiddleware>();
 }
 
-
-app.UseCors(o => o.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+app.UseCors(builder =>
+{
+    builder.WithOrigins(corsConfiguration.Web).AllowAnyHeader().AllowAnyMethod();
+});
 
 app.UseAuthentication();
 app.UseMiddleware<TestMiddleware>();
 app.UseAuthorization();
 app.UseMiddleware<ScopeAuthorisationMiddleware>();
 app.UseMiddleware<AccountEnrichmentMiddleware>();
-
-// app.UseRouting();
-// app.UseEndpoints(endpoints =>
-// {
-//     endpoints.MapControllers();
-// });
 app.MapEndpoints();
 
 app.Run();

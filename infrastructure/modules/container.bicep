@@ -43,7 +43,7 @@ resource llmApp 'Microsoft.App/containerApps@2025-01-01' = {
         }
       ]
       ingress: {
-        external: true
+        external: false
         targetPort: 8000
       }
     }
@@ -82,7 +82,7 @@ resource apiApp 'Microsoft.App/containerApps@2025-01-01' = {
         }
       ]
       ingress: {
-        external: true
+        external: false
         targetPort: 8080
       }
     }
@@ -186,5 +186,4 @@ resource webApp 'Microsoft.App/containerApps@2025-01-01' = {
 output apiContainerPrincipleId string = apiApp.identity.principalId
 output llmContainerPrincipleId string = llmApp.identity.principalId
 output webContainerPrincipleId string = webApp.identity.principalId
-output llmContainerId string = llmApp.id
-output apiContainerId string = apiApp.id
+output webContainerUrl string = 'https://${webApp.properties.configuration.ingress.fqdn}'
