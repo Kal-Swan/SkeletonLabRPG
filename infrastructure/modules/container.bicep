@@ -187,3 +187,4 @@ output apiContainerPrincipleId string = apiApp.identity.principalId
 output llmContainerPrincipleId string = llmApp.identity.principalId
 output webContainerPrincipleId string = webApp.identity.principalId
 output webContainerUrl string = 'https://${webApp.properties.configuration.ingress.fqdn}'
+output apiContainerUrl string = 'https://${apiApp.properties.configuration.ingress.fqdn}'

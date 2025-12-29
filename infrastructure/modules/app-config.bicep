@@ -10,6 +10,9 @@ param queueServiceEndpoint string
 param queueNames array
 param blobContainerNames array
 param webContainerUrl string
+param serviceBusEndpoint string
+param serviceBusQueueName string
+param apiContainerUrl string
 
 var queueConfigs = reduce(
   queueNames,
@@ -36,6 +39,23 @@ var blobConfigs = reduce(
 )
 
 var configs = union(queueConfigs, blobConfigs, {
+  ApiUrl: {
+      default: 'http://localhost:5120'
+      dev: 'http://localhost:5120'
+      uat: apiContainerUrl
+  }
+  'WorkerApi:Key': {
+    default: ''
+    uat: ''
+  }
+  'ServiceBus:Endpoint': {
+    default: serviceBusEndpoint
+    uat: serviceBusEndpoint
+  }
+  'ServiceBus:QueueName': {
+    default: serviceBusQueueName
+    uat: serviceBusQueueName
+  }
   'Cors:Web': {
     default: 'http://localhost:5173'
     uat: webContainerUrl
@@ -85,13 +105,24 @@ var configs = union(queueConfigs, blobConfigs, {
   }
 })
 
-var environmentConfig = [
+var defaultEntries = [
   for item in items(configs): {
     key: item.key
-    value: string(item.value[environment] ?? item.value.default)
+    value: string(item.value.default)
+    label: ''
+  }
+]
+
+var envEntries = [
+  for item in items(configs): {
+    key: item.key
+    value: string(item.value[environment])
     label: environment
   }
 ]
+
+var environmentConfig = concat(defaultEntries, envEntries)
+
 
 resource appConfig 'Microsoft.AppConfiguration/configurationStores@2024-05-01' = {
   name: appConfigurationName
@@ -104,11 +135,10 @@ resource appConfig 'Microsoft.AppConfiguration/configurationStores@2024-05-01' =
 resource environmentConfigKeyValue 'Microsoft.AppConfiguration/configurationStores/keyValues@2024-05-01' = [
   for item in environmentConfig: {
     parent: appConfig
-    name: item.key
+    name: '${item.key}$${item.label}'
     properties: {
-      value: item.value
+      value:  item.value
       tags: {
-        label: item.label
         environment: environment
       }
     }

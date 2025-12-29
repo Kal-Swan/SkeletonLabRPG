@@ -35,7 +35,7 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-11-15
 }
 
 resource container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = [
-  for containerName in ['default']: {
+  for containerName in ['default', 'BuildRequests']: {
     parent: database
     name: containerName
     properties: {

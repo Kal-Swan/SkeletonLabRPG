@@ -13,9 +13,9 @@ from langchain.output_parsers import PydanticOutputParser
 from langchain.schema import Document
 from openai import RateLimitError
 from langchain.document_transformers import Html2TextTransformer
-from .build_model import BuildList
-from .prompt_instructions import instruction
-from .constants import bg3, daggerheart
+from build_model import LLMBuilds
+from prompt_instructions import instruction
+from constants import bg3, daggerheart
 from azure.storage.blob import BlobServiceClient
 from PyPDF2 import PdfReader
 import requests
@@ -46,7 +46,7 @@ embeddings = AzureOpenAIEmbeddings(
     azure_ad_token_provider=token_provider,
 )
 
-parser = PydanticOutputParser(pydantic_object=BuildList)
+parser = PydanticOutputParser(pydantic_object=LLMBuilds)
 prompt_template = ChatPromptTemplate.from_template(instruction).partial(format_instructions=parser.get_format_instructions())
 
 _faiss_db_cache = {}
@@ -72,7 +72,6 @@ def test_fetch():
 
 
 async def process_data(question: str, rpg_system: str):
-    test_fetch()
     if rpg_system not in  _faiss_db_cache:
         raw_documents = []
 

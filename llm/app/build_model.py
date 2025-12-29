@@ -9,5 +9,5 @@ class Build(BaseModel):
     template: str
 
 
-class BuildList(BaseModel):
+class LLMBuilds(BaseModel):
     builds: List[Build]

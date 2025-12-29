@@ -41,7 +41,7 @@
 				if (result.isSuccess) {
 					loadingBuildId = '';
 					console.log('deleted build');
-					console.log(item.rpgSystemId);
+					console.log(item.buildSystemId);
 					savedBuilds = {
 						...savedBuilds,
 						[selectedKey]: savedBuilds![selectedKey].filter(
@@ -78,6 +78,10 @@
 	});
 
 </script>
+
+{#if savedBuilds === null || Object.keys(savedBuilds).length === 0}
+	<Label text="No Saved Builds" />
+{/if}
 
 {#if savedBuilds && !selectedItem}
 	{#each Object.keys(savedBuilds) as key}

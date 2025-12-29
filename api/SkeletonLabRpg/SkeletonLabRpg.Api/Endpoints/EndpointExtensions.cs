@@ -7,20 +7,14 @@ public static class EndpointExtensions
 {
     public static IServiceCollection AddEndpoints(this IServiceCollection services)
     {
-        services.AddEndpoints(Assembly.GetExecutingAssembly());
-        return services;
-    }
-    
-    public static IServiceCollection AddEndpoints(this IServiceCollection services, Assembly assembly)
-    {
-        ServiceDescriptor[] serviceDescriptors =
-            assembly.DefinedTypes
+        var endpointServiceDescriptors =
+            Assembly.GetExecutingAssembly().DefinedTypes
                 .Where(type => !type.IsAbstract && !type.IsInterface &&
-                               type.IsAssignableTo(typeof(IEndpoint)))
+                               (type.IsAssignableTo(typeof(IEndpoint))))
                 .Select(type => ServiceDescriptor.Transient(typeof(IEndpoint), type))
                 .ToArray();
-        
-        services.TryAddEnumerable(serviceDescriptors);
+
+        services.TryAddEnumerable(endpointServiceDescriptors);
         return services;
     }
 
@@ -32,7 +26,6 @@ public static class EndpointExtensions
         {
             endpoint.MapEndpoint(builder);
         }
-
         return app;
     }
 }

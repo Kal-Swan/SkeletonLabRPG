@@ -3,7 +3,7 @@ import { Actions } from '@models/actions.js';
 import { z, ZodSchema } from 'zod';
 import { serverDelete, serverPost, serverPut } from '@helpers/server-fetch.js';
 import { buildSchema } from '@models/rpgbuild/build-schema.js';
-import { baseBuildsEndpoint, deleteRpgBuildEndpoint, updateRpgBuildEndpoint } from '@environment/rpg-build/endpoint.js';
+import { baseBuildsEndpoint, updateRpgBuildEndpoint } from './endpoint.js';
 import type { ActiveAccount } from '@models/auth/account.js';
 
 function validationRequestData<T extends ZodSchema>(
