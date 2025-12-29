@@ -8,10 +8,8 @@ from azure.appconfiguration.provider import (
 )
 import json
 import httpx
-import requests
 import os
 
-from build_model import Build, LLMBuilds
 from azure_llm_logic import process_data
 
 credential = SyncDefaultAzureCredential()
@@ -25,7 +23,6 @@ servicebus_endpoint = config.get("ServiceBus:Endpoint")
 queue_name = config.get("ServiceBus:QueueName")
 api_url = config.get("ApiUrl")
 worker_api_key = config.get("WorkerApi:Key")
-# client = ServiceBusClient(fully_qualified_namespace=servicebus_endpoint, credential=credential)
 
 async def main():
     async_credential = AsyncDefaultAzureCredential()
@@ -44,12 +41,6 @@ async def main():
                             "X-Worker-Api-Key": worker_api_key,
                             "Content-Type": "application/json"
                         }
-
-                        # build1 = Build(name="Barbarian", reason="High damage output", template="strength_based")
-
-                        # llmBuilds = LLMBuilds(builds=[build1])
-
-                        # request = { result }
 
                         response = await http_client.post(
                             url=f"{api_url}/api/v1/buildrequest/notify/{id}",
