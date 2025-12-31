@@ -1,13 +1,12 @@
 FROM python:3.13-slim
 WORKDIR /llm
 
-COPY requirements.txt .
-COPY mypy.ini .
-COPY __init__.py .
+COPY requirements.txt mypy.ini /llm/
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./app ./app
+COPY __init__.py  __main__.py /llm/
+COPY app /llm/app
 
 ENV DEBUG=false
 
-CMD ["python", "-m", "llm.app.worker"]
+CMD ["python", "-m", "app.worker"]
