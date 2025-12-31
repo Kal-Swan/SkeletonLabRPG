@@ -16,7 +16,11 @@ credential = SyncDefaultAzureCredential()
 azure_app_config_endpoint = os.getenv("AZURE_APP_CONFIGURATION_ENDPOINT")
 env = os.getenv("LLM_ENV", "")
 current_env = env if env.lower() else '\0'
-selects = {SettingSelector(key_filter="*", label_filter=current_env)}
+
+if azure_app_config_endpoint is None or azure_app_config_endpoint.strip() == "":
+    raise RuntimeError("Azure App Configuration endpoint not configured")
+
+selects = [SettingSelector(key_filter="*", label_filter=current_env)]
 config = load(endpoint=azure_app_config_endpoint, credential=credential, selects=selects)
 
 servicebus_endpoint = config.get("ServiceBus:Endpoint")
@@ -59,7 +63,7 @@ async def main():
 
 
 try:
-    loop = asyncio.get_running_loop()
+    loop: None | asyncio.AbstractEventLoop = asyncio.get_running_loop()
 except RuntimeError:
     loop = None
 
