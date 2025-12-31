@@ -41,7 +41,7 @@ public static class CreateBuildSystem
             
             var result = await repository.Create(rpgSystem);
             
-            cache.Invalidate(CacheKeys.BuildSystemGetManyCacheKey(accountDetails.Email));
+            cache.Invalidate(CacheKeys.GetRepositoryGetManyByType<BuildSystemModel>(accountDetails.Email));
             
             return Results.Ok(result);
         }

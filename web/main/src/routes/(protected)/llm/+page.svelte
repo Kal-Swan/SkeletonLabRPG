@@ -108,12 +108,15 @@
 	};
 
 	const handleItemUpdate = (item: buildRequestAnswerType) => {
-		const buildRequestIndex = currentBuildRequests.findIndex(
-			(build) => build.id === item.buildRequestId
-		);
-		const buildRequest = currentBuildRequests[buildRequestIndex];
-		const answerIndex = buildRequest.answers.findIndex((answer) => answer.id === item.id);
-		currentBuildRequests[buildRequestIndex].answers[answerIndex] = item;
+		currentBuildRequests = currentBuildRequests.map((build) => {
+			if (build.id !== item.buildRequestId) return build;
+
+			return {
+				...build,
+				answers: build.answers.map((answer) => (answer.id === item.id ? item : answer))
+			};
+		});
+
 		selectedItem = null;
 	};
 
@@ -166,6 +169,11 @@
 		};
 	};
 
+	$effect(() => {
+		console.log('currentBuildRequests changed: ');
+		console.log(currentBuildRequests);
+	});
+
 	let sortedBuildRequests = $derived(
 		[...currentBuildRequests].sort((a, b) =>
 			a.latestProcessedDate > b.latestProcessedDate ? -1 : 1
@@ -181,13 +189,13 @@
 		saveButtonText="Send"
 		loading={loadingAnswer}
 	>
-		<div class="flex flex-row justify-between gap-2">
-			<div class="flex flex-[1] flex-col gap-2">
+		<div class="flex flex-col justify-between gap-2 md:flex-row">
+			<div class="flex flex-col gap-2 md:flex-[1]">
 				<Label text="Choose RPG Build" textSize="text-sm" />
 				<Select options={buildSystems} bind:value={rpgBuildQuestion.buildSystemId} />
 			</div>
 
-			<div class="flex flex-[3] flex-col gap-2">
+			<div class="flex flex-col gap-2 md:flex-[3]">
 				<InputField
 					name={'Question'}
 					underline={false}

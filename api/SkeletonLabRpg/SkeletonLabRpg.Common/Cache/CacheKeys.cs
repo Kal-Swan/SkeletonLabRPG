@@ -4,5 +4,5 @@ namespace SkeletonLabRpg.Common.Cache;
 
 public static class CacheKeys
 {
-    public static string BuildSystemGetManyCacheKey(string accountEmail) => $"{nameof(BuildSystemModel)}-GetMany-{accountEmail}";
+    public static string GetRepositoryGetManyByType<T>(string accountEmail) => $"{typeof(T).Name}-GetMany-{accountEmail}";
 }

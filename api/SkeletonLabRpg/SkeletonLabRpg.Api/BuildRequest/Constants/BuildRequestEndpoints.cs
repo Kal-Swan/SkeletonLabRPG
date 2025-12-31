@@ -12,5 +12,5 @@ public static class BuildRequestEndpoints
     
     public const string GetBuildRequestDetails = $"{Base}/details";
 
-    public const string UpdateBuildRequest = $"{Base}/update/{{id:guid}}/{{buildAnswerId:guid}}";
+    public const string UpdateBuildRequest = $"{Base}/update/{{id:guid}}";
 }

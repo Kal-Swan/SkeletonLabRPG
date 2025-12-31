@@ -47,7 +47,7 @@ export async function POST({ request }: any) {
 			}
 
 			const updateResponse = await serverDefaultPostFetch(
-				`${updateBuildRequestEndpoint}/${validation.data.buildRequestId}/${validation.data.id}?status=${validation.data.status!}`,
+				`${updateBuildRequestEndpoint}/${validation.data.buildRequestId}`,
 				validation.data,
 				activeAccount,
 				'PUT'

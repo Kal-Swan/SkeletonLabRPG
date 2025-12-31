@@ -53,7 +53,7 @@ public class CosmosDbBaseRepository<T>(ICosmosDbContainerFactory cosmosDbContain
     {
         var container = await GetContainer(new T().ContainerName).Value;
         return await taskCache.GetOrAddMany(
-            key: CacheKeys.BuildSystemGetManyCacheKey(accountEmail),
+            key: CacheKeys.GetRepositoryGetManyByType<T>(accountEmail),
             timeToCache: TimeSpan.FromMinutes(10),
             task: async () =>
             {

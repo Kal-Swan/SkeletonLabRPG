@@ -10,4 +10,4 @@ COPY ./app ./app
 
 ENV DEBUG=false
 
-CMD ["python", "worker.py"]
+CMD ["python", "-m", "llm.app.worker"]

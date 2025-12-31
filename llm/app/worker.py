@@ -10,7 +10,7 @@ import json
 import httpx
 import os
 
-from azure_llm_logic import process_data
+from .azure_llm_logic import process_data
 
 credential = SyncDefaultAzureCredential()
 azure_app_config_endpoint = os.getenv("AZURE_APP_CONFIGURATION_ENDPOINT")
