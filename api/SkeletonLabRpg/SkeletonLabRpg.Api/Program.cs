@@ -99,12 +99,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
     {
-        builder.WithOrigins(corsConfiguration.Web).AllowAnyHeader().AllowAnyMethod();
+        builder.WithOrigins(corsConfiguration.Web).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
 });
 
-
 var app = builder.Build();
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
 app.UseExceptionHandler(_ => {});
 
@@ -123,10 +123,11 @@ app.UseMiddleware<TestMiddleware>();
 app.UseAuthorization();
 app.UseMiddleware<ScopeAuthorisationMiddleware>();
 app.UseMiddleware<AccountEnrichmentMiddleware>();
- app.MapHub<BuildHub>(buildHubEndpointPath).RequireCors(builder =>
- {
-     builder.WithOrigins(corsConfiguration.Web).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
- });
+
+logger.LogInformation("CORS config:");
+logger.LogInformation(corsConfiguration.Web);
+
+app.MapHub<BuildHub>(buildHubEndpointPath);
 app.MapEndpoints();
 
 app.Run();
