@@ -82,7 +82,6 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddScoped<AccountDetails>();
-builder.Services.RegisterApplicationInsights(builder);
 builder.Services.ConfigureCommonServices(builder.Configuration);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.Configure<SkeletonLabRpgConfiguration>(builder.Configuration.GetSection(SkeletonLabRpgConfiguration.Name));
@@ -102,6 +101,11 @@ builder.Services.AddCors(options =>
         builder.WithOrigins(corsConfiguration.Web).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
 });
+
+builder.Logging.ClearProviders();
+builder.Services.RegisterApplicationInsights(builder);
+builder.Logging.AddConsole();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 var app = builder.Build();
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
