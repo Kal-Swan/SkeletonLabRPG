@@ -9,20 +9,22 @@ export const llmBuildSchema = z.object({
 });
 
 export const rpgBuildQuestionSchema = z.object({
-	rpgSystemId: z.string().min(1),
+	buildSystemId: z.string().min(1),
 	question: z.string().min(1)
 });
 
 export const createBuildQuestionSchema = z.object({
-	rpgSystem: z.string().min(1),
+	buildSystemId: z.string(),
 	question: z.string().min(1)
 });
 
-export const build = z.array(llmBuildSchema);
+export const answers = z.array(llmBuildSchema);
 
 export const llmBuildsSchema = z.array(llmBuildSchema);
 export const llmBuildResponseSchema = z.object({
-	builds: build
+	id: z.string(),
+	buildSystemId: z.string(),
+	answers: answers
 });
 
 export type llmBuildResponseType = z.infer<typeof llmBuildResponseSchema>;

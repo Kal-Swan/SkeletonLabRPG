@@ -1,10 +1,11 @@
 param prefix string = 'skeletonlabrpg'
 param environment string = 'uat'
 param userGroupId string = 'eea6a68d-8077-49d1-823d-376f3de41030'
-var appConfigEndpoint = 'https://${prefix}-appconfig-shared.azconfig.io'
+param userObjectId string = '2b5083d4-974c-47fa-893f-8352ac9678eb'
+// var appConfigEndpoint = 'https://${prefix}-appconfig-shared.azconfig.io'
 var appConfigName = '${prefix}-shared-appconfig'
 param queueNames array = [
-  'characterattributequeue'
+  'buildrequests'
 ]
 param blobContainerNames array = [
   'characterattributemodels'
@@ -29,6 +30,9 @@ module appConfig './modules/app-config.bicep' = {
     queueNames: queueNames
     blobContainerNames: blobContainerNames
     webContainerUrl: container.outputs.webContainerUrl
+    serviceBusEndpoint: serviceBus.outputs.serviceBusEndpoint
+    serviceBusQueueName: serviceBus.outputs.queueName
+    apiContainerUrl: container.outputs.apiContainerUrl
   }
 }
 
@@ -204,6 +208,24 @@ module openAi './modules/openai.bicep' = {
     managedIdentities: [container.outputs.llmContainerPrincipleId]
   }
 }
+
+module serviceBus './modules/service-bus.bicep' = {
+  name: 'serviceBusModule'
+  params: {
+    prefix: '${prefix}-${environment}'
+    busDataReceiverRoleManagedIdentities: [container.outputs.llmContainerPrincipleId]
+    busDataSenderRoleManagedIdentities: [container.outputs.apiContainerPrincipleId]
+    userObjectId: userObjectId
+  }
+}
+
+// module existingAppConfig './modules/existing-app-config.bicep' = {
+//   name: 'existingAppConfigModule'
+//   params: {
+//     appConfigurationName: appConfig.name
+//     environment: environment
+//   }
+// }
 
 // module vnet './modules/vnet.bicep' = {
 //   name: 'vnetModule'

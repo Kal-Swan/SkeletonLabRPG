@@ -1,5 +1,6 @@
 import { Actions, type ActionType } from '@models/actions';
 import type { ErrorResponse } from '@models/error-response';
+import { error } from '@sveltejs/kit';
 
 export const errorMessageSplitByComma = (errors: ErrorResponse[] | undefined) => {
 	if (errors?.length === 0) {
@@ -26,3 +27,16 @@ export const isSingleFieldAction = (action: ActionType) => {
 	];
 	return singleFieldActions.includes(action);
 };
+
+export const fetchHandler = async (url: string, token: string) => {
+	try {
+		const res = await fetch(url, {
+			headers: { Authorization: `Bearer ${token}` }
+		});
+
+		return await res.json();
+	} catch (err) {
+		if ((err as any)?.status) throw err;
+		throw error(503, `Unable to reach API at ${url}`);
+	}
+}

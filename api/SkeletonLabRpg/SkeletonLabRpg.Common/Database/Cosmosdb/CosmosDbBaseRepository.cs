@@ -2,9 +2,11 @@ using System.Linq.Expressions;
 using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SkeletonLabRpg.Common.Cache;
 using SkeletonLabRpg.Common.Database.Cosmosdb.Entities;
 using SkeletonLabRpg.Common.Exceptions;
 using SkeletonLabRpg.Common.Services.Interfaces;
+using Microsoft.Azure.Cosmos.Linq;
 
 namespace SkeletonLabRpg.Common.Database.Cosmosdb;
 
@@ -40,26 +42,46 @@ public class CosmosDbBaseRepository<T>(ICosmosDbContainerFactory cosmosDbContain
     public async Task<T?> GetByPredicate(Expression<Func<T, bool>> predicate)
     {
         var container = await GetContainer(new T().ContainerName).Value;
-        return await container.GetItemLinqQueryable<T>(true, requestOptions: new QueryRequestOptions
-            {
-                PartitionKey = new PartitionKey(new T().PartitionKey)
-            })
-            .FirstOrDefaultAsync(predicate);
-    }
-
-    public async Task<IEnumerable<T>> GetMany(Expression<Func<T, bool>> predicate)
-    {
-        var container = await GetContainer(new T().ContainerName).Value;
-        return container.GetItemLinqQueryable<T>(true, requestOptions: new QueryRequestOptions
+        return await container.GetItemLinqQueryable<T>(requestOptions: new QueryRequestOptions
         {
             PartitionKey = new PartitionKey(new T().PartitionKey)
-        }).Where(predicate).ToList();
+        }).FirstOrDefaultAsync(predicate);
+
+    }
+
+    public async Task<IEnumerable<T>> GetMany(Expression<Func<T, bool>> predicate, string accountEmail)
+    {
+        var container = await GetContainer(new T().ContainerName).Value;
+        return await taskCache.GetOrAddMany(
+            key: CacheKeys.GetRepositoryGetManyByType<T>(accountEmail),
+            timeToCache: TimeSpan.FromMinutes(10),
+            task: async () =>
+            {
+                var iterator = container
+                    .GetItemLinqQueryable<T>(requestOptions: new QueryRequestOptions
+                    {
+                        PartitionKey = new PartitionKey(new T().PartitionKey)
+                    })
+                    .Where(predicate)
+                    .ToFeedIterator();
+
+                var results = new List<T>();
+
+                while (iterator.HasMoreResults)
+                {
+                    var response = await iterator.ReadNextAsync();
+                    double ru = response.RequestCharge;
+                    results.AddRange(response);
+                }
+
+                return results;
+            });
     }
 
     public async Task<bool> DeleteMany(Expression<Func<T, bool>> predicate)
     {
         var container = await GetContainer(new T().ContainerName).Value;
-        var items = container.GetItemLinqQueryable<T>(true).Where(predicate).ToList();
+        var items = await container.GetItemLinqQueryable<T>().Where(predicate).ToListAsync();
         foreach (var item in items)
         {
             await container.DeleteItemAsync<T>(item.Id.ToString(), new PartitionKey(item.PartitionKey));

@@ -6,18 +6,21 @@
 	import { buildSchema, type buildSchemaType } from '@models/rpgbuild/build-schema.js';
 	import Form from '@components/form.svelte';
 	import InputField from '@components/input-field.svelte';
+	import type { buildSystemType } from '../llm/build-details-schema.js';
 
 	type groupedSavedBuildsType = Record<string, buildSchemaType[]>;
 	let { data } = $props();
 	let { builds } = data;
-	let savedBuilds = $state<groupedSavedBuildsType | null>(builds);
+	let {
+		groupBuilds,
+		buildSystems
+	}: { groupBuilds: groupedSavedBuildsType; buildSystems: buildSystemType[] } = builds;
+	let savedBuilds = $state<groupedSavedBuildsType | null>(groupBuilds);
 	let selectedItem = $state<buildSchemaType | null>(null);
 	let loadingBuildId = $state<string>('');
-	let selectedKey = $state<string>('');
 
-	const onBuildItemClick = (item: buildSchemaType, key: string) => {
+	const onBuildItemClick = (item: buildSchemaType) => {
 		selectedItem = item;
-		selectedKey = key;
 	};
 
 	const menu = [
@@ -41,10 +44,10 @@
 				if (result.isSuccess) {
 					loadingBuildId = '';
 					console.log('deleted build');
-					console.log(item.rpgSystemId);
+					console.log(item.buildSystemId);
 					savedBuilds = {
 						...savedBuilds,
-						[selectedKey]: savedBuilds![selectedKey].filter(
+						[item.buildSystemId]: savedBuilds![item.buildSystemId].filter(
 							(build) => build.id !== item.id
 						)
 					};
@@ -54,14 +57,17 @@
 	];
 
 	const handleItemUpdate = async (item: buildSchemaType) => {
+		if (savedBuilds === null) return;
+
 		loadingBuildId = item.id;
 		const result = await clientFetch<buildSchemaType>('/rpgbuild', Actions.updateRpgBuild, item);
 
 		loadingBuildId = '';
+
 		if (result.isSuccess) {
 			savedBuilds = {
 				...savedBuilds,
-				[selectedKey]: savedBuilds![selectedKey].map((build) =>
+				[item.buildSystemId]: savedBuilds[item.buildSystemId].map((build) =>
 					build.id === result.data!.id ? { ...build, ...result.data } : build
 				)
 			};
@@ -76,19 +82,22 @@
 		console.log('savedBuilds changed: ');
 		console.log(savedBuilds);
 	});
-
 </script>
+
+{#if savedBuilds === null || Object.keys(savedBuilds).length === 0}
+	<Label text="No Saved Builds" />
+{/if}
 
 {#if savedBuilds && !selectedItem}
 	{#each Object.keys(savedBuilds) as key}
 		<div class="mt-5 flex flex-col">
-			<Label text={key} textSize="text-md" />
+			<Label text={buildSystems.find((bs) => bs.id === key)?.name || key} textSize="text-md" />
 			<div class="mt-5 grid w-full grid-cols-1 gap-2 md:grid-cols-3">
 				{#each savedBuilds[key] as build}
 					<ItemDescription
 						{menu}
 						item={build}
-						handleItemClick={() => onBuildItemClick(build, key)}
+						handleItemClick={() => onBuildItemClick(build)}
 						title={build.name}
 						loading={loadingBuildId}
 					/>

@@ -1,13 +1,16 @@
 using Azure.Identity;
+using Azure.Messaging.ServiceBus;
 using Azure.Storage.Blobs;
 using DEXRPG.Common.Services;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using SkeletonLabRpg.Common.Cache;
 using SkeletonLabRpg.Common.Configuration;
 using SkeletonLabRpg.Common.Database;
 using SkeletonLabRpg.Common.Database.Cosmosdb;
@@ -36,8 +39,11 @@ public static class RegisterCommonServices
         services.AddSingleton(_ => new BlobServiceClient(new Uri(storageConfiguration!.Blob.Endpoint), new DefaultAzureCredential()));
         services.AddTransient<IBlobStorage, BlobStorage>();
         services.AddSingleton(typeof(IStorageQueue<>), typeof(QueueStorage<>));
-        services.AddScoped(typeof(ITaskCache<>), typeof(TaskCache<>));
-        
+        services.AddSingleton(typeof(ITaskCache<>), typeof(TaskCache<>));
+        services.Configure<ServiceBusConfiguration>(configuration.GetSection(ServiceBusConfiguration.Name));
+        var serviceBusConfiguration = configuration.GetSection(ServiceBusConfiguration.Name).Get<ServiceBusConfiguration>();
+        services.AddSingleton(_ =>new ServiceBusClient(serviceBusConfiguration.Endpoint, new DefaultAzureCredential()));
+        services.AddSingleton<IBuildRequestPublisher, BuildRequestPublisher>();
         return services;
     }
     

@@ -36,7 +36,8 @@ export async function serverGet(path: string, activeAccount: ActiveAccount): Pro
 export async function serverPost(
 	path: string,
 	data: Record<string, any>,
-	activeAccount: ActiveAccount
+	activeAccount: ActiveAccount,
+	method?: string
 ): Promise<Response> {
 	console.log('server post active account');
 	console.log(activeAccount?.account);
@@ -47,7 +48,7 @@ export async function serverPost(
 	return baseServerFetch(
 		path,
 		{
-			method: 'POST',
+			method: method ?? 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(data)
 		},

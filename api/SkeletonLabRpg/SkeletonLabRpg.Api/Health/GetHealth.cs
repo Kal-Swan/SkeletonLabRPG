@@ -6,7 +6,7 @@ namespace SkeletonLabRpg.Api.Health;
 
 public static class GetHealth
 {
-    public class Endpoint : IEndpoint
+    public class ApiEndpoint : IEndpoint
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {

@@ -1,18 +1,21 @@
 using System.Security.Claims;
 using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Identity.Web;
 using SkeletonLabRpg.Api.Authorisation;
+using SkeletonLabRpg.Api.BuildRequest.External;
+using SkeletonLabRpg.Api.Configuration;
 using SkeletonLabRpg.Api.Endpoints;
 using SkeletonLabRpg.Api.Exceptions;
-using SkeletonLabRpg.Api.Llm.External;
 using SkeletonLabRpg.Api.Middlewares;
+using SkeletonLabRpg.Api.SignalR;
 using SkeletonLabRpg.Common;
 using SkeletonLabRpg.Common.Configuration;
 using SkeletonLabRpg.Common.Constants;
 
-
+const string buildHubEndpointPath = "/buildHub";
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
@@ -40,9 +43,36 @@ builder.Configuration.AddAzureAppConfiguration(options =>
 
 // var azureAdb2CConfiguration =
 //     builder.Configuration.GetSection(AzureAuthConfiguration.Name).Get<AzureAuthConfiguration>();
+var azureAdb2CConfiguration =
+    builder.Configuration.GetSection(AzureAuthConfiguration.Name).Get<AzureAuthConfiguration>();
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder =>
+    {
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection(AzureAuthConfiguration.Name));
+        builder.Audience = azureAdb2CConfiguration.Audience;
+        builder.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (path.StartsWithSegments(buildHubEndpointPath)))
+                {
+                    // Read the token out of the query string
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
+    }, options =>
+    {
+        options.ClientId = azureAdb2CConfiguration.ClientId;
+        options.Domain = azureAdb2CConfiguration.Domain;
+        options.TenantId = azureAdb2CConfiguration.TenantId;
+        options.Instance = azureAdb2CConfiguration.Instance;
+    });
 builder.Services.AddAuthorization(options =>
 {
     foreach (var role in AzureAdB2CClaimConstants.Roles)
@@ -57,9 +87,21 @@ builder.Services.ConfigureCommonServices(builder.Configuration);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.Configure<SkeletonLabRpgConfiguration>(builder.Configuration.GetSection(SkeletonLabRpgConfiguration.Name));
 builder.Services.AddCors();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 
 var corsConfiguration =
     builder.Configuration.GetSection(CorsConfiguration.Name).Get<CorsConfiguration>();
+
+builder.Services.Configure<WorkerApiConfiguration>(builder.Configuration.GetSection(WorkerApiConfiguration.Name));
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", builder =>
+    {
+        builder.WithOrigins(corsConfiguration.Web).AllowAnyHeader().AllowAnyMethod();
+    });
+});
 
 
 var app = builder.Build();
@@ -75,16 +117,16 @@ else
     app.UseHttpsRedirection();
 }
 
-app.UseCors(builder =>
-{
-    builder.WithOrigins(corsConfiguration.Web).AllowAnyHeader().AllowAnyMethod();
-});
-
+app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseMiddleware<TestMiddleware>();
 app.UseAuthorization();
 app.UseMiddleware<ScopeAuthorisationMiddleware>();
 app.UseMiddleware<AccountEnrichmentMiddleware>();
+ app.MapHub<BuildHub>(buildHubEndpointPath).RequireCors(builder =>
+ {
+     builder.WithOrigins(corsConfiguration.Web).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+ });
 app.MapEndpoints();
 
 app.Run();

@@ -39,4 +39,10 @@ mypy==1.18.2
 
 azure-appconfiguration-provider==2.2.0
 
+azure-servicebus==7.14.3
+
+celery==5.5.3
+
+httpx==0.28.1
+
 
