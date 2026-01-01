@@ -29,7 +29,8 @@ public static class UpdateBuildRequest
             [FromServices] IRepository<BuildRequestModel> buildRequestRepository,
             [FromServices] IRepository<BuildModel> buildRepository,
             [FromServices] IRepository<BuildSystemModel> buildSystemRepository,
-            [FromServices] ITaskCache<BuildRequestModel> buildRequestCache)
+            [FromServices] ITaskCache<BuildRequestModel> buildRequestCache,
+            [FromServices] ITaskCache<BuildModel> buildCache)
         {
             var buildRequest = await buildRequestRepository.GetById(id);
             if (buildRequest is null)
@@ -60,8 +61,8 @@ public static class UpdateBuildRequest
             }
 
             var updatedModel = await buildRequestRepository.Update(buildRequest);
-            buildRequestCache.Invalidate(CacheKeys.GetRepositoryGetManyByType<BuildRequestModel>(accountDetails.Email));
-            
+            buildRequestCache.Invalidate(accountDetails.Email);
+            buildCache.Invalidate(accountDetails.Email);
             var buildSystem = await buildSystemRepository.GetById(updatedModel.BuildSystemId);
             return Results.Ok(new BuildRequestResponse(
                 updatedModel.Id,

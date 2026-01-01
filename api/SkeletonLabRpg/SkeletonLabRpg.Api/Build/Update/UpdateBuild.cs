@@ -38,7 +38,7 @@ public static class UpdateBuild
             build.Reason = request.Reason;
             
             var result = await repository.Update(build);
-            cache.Invalidate(CacheKeys.GetRepositoryGetManyByType<BuildModel>(accountDetails.Email));
+            cache.Invalidate(accountDetails.Email);
             
             return Results.Ok(result);
         }

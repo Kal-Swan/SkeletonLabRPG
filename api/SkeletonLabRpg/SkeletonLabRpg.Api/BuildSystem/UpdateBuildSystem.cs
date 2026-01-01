@@ -37,7 +37,7 @@ public static class UpdateBuildSystem
             current.Name = request.Name;
             
             var updated = await repository.Update(current);
-            cache.Invalidate(CacheKeys.GetRepositoryGetManyByType<BuildSystemModel>(accountDetails.Email), id.ToString());
+            cache.Invalidate(accountDetails.Email, id.ToString());
             return Results.Ok(updated);
         }
     }
