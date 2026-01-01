@@ -53,8 +53,7 @@ public class TaskCache<T> : ITaskCache<T>
     {
         if (emailAccountForCollectionCached is not null)
         {
-            var multiCacheKey = CacheKeys.GetRepositoryGetManyByType<T>(emailAccountForCollectionCached);
-            _cache.Remove(multiCacheKey);
+            _cache.Remove(CacheKeys.GetRepositoryGetManyByType<T>(emailAccountForCollectionCached));
         }
 
         if (singleCachedKey is not null)
