@@ -27,7 +27,7 @@
 # Node.js for frontend
 node_modules/
 dist/
-build/
+main/build/
 .env
 __pycache__/
 
