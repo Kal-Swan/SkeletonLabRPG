@@ -49,11 +49,12 @@ public class TaskCache<T> : ITaskCache<T>
         return currentValues;
     }
 
-    public void Invalidate(string? multipleCachedKey, string? singleCachedKey)
+    public void Invalidate(string? emailAccountForCollectionCached, string? singleCachedKey)
     {
-        if (multipleCachedKey is not null)
+        if (emailAccountForCollectionCached is not null)
         {
-            _cache.Remove(multipleCachedKey);
+            var multiCacheKey = CacheKeys.GetRepositoryGetManyByType<T>(emailAccountForCollectionCached);
+            _cache.Remove(multiCacheKey);
         }
 
         if (singleCachedKey is not null)

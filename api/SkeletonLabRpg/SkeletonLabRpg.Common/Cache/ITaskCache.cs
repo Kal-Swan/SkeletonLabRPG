@@ -6,5 +6,5 @@ public interface ITaskCache<T>
     
     Task<IEnumerable<T>>  GetOrAddMany(string key, TimeSpan timeToCache, Func<Task<List<T>>> task);
 
-    void Invalidate(string? multipleCachedKey = null, string? singleCachedKey = null);
+    void Invalidate(string? emailAccountForCollectionCached = null, string? singleCachedKey = null);
 }
