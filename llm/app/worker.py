@@ -35,21 +35,29 @@ async def main():
             async with httpx.AsyncClient(timeout=30) as http_client:
                 async for msg in receiver:
                     try:
+                        print(f"Received message: {str(msg)}")
                         build_request = json.loads(str(msg))
                         id = build_request["id"]
                         rpg_system = build_request["build_system"].lower()
                         question = build_request["question"]
                         result = await process_data(question, rpg_system)
-
+                        print(f"Received result: {str(result)}")
                         headers = {
                             "X-Worker-Api-Key": worker_api_key,
                             "Content-Type": "application/json"
                         }
 
+                        print(f"api_url: {api_url}")
+                        print(f"Notifying build request api with id: {id}")
+                        print(f"Result data: {result.model_dump()}")
+                        print(f"Headers: {headers}")
+
                         response = await http_client.post(
                             url=f"{api_url}/api/v1/buildrequest/notify/{id}",
                             json=result.model_dump(),
                             headers=headers)
+                        
+                        print(f"Notify response status: {response.status_code}, body: {response.text}")
                         
                         if 200 <= response.status_code < 300:
                             await receiver.complete_message(msg)
