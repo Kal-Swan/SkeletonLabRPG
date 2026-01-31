@@ -7,6 +7,8 @@ export function validateRequest<T extends ZodSchema>(
 	actionName: string
 ): { success: boolean; data: z.infer<T>; error: Response | null } {
 	const validationResult = schema.safeParse(data);
+	console.log('validationResult');
+	console.log(validationResult.error);
 	if (!validationResult.success) {
 		console.error(`Schema validation failed for ${actionName}: `, validationResult.error.flatten());
 

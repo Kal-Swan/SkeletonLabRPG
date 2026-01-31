@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using SkeletonLabRpg.Api.Authorisation;
 using SkeletonLabRpg.Api.Build.Constants;
 using SkeletonLabRpg.Api.Build.Extensions;
 using SkeletonLabRpg.Api.Endpoints;
-using SkeletonLabRpg.Common.Database;
+using SkeletonLabRpg.Common.Authorisation;
+using SkeletonLabRpg.Common.Database.Cosmosdb;
 using SkeletonLabRpg.Common.Database.Models.Build;
+using SkeletonLabRpg.Common.Database.Models.Builds;
 
 namespace SkeletonLabRpg.Api.Build.GetAll;
 
@@ -23,11 +24,11 @@ public static class GetAllBuilds
 
         private static async Task<IResult> Handler(
             [FromServices] AccountDetails accountDetails,
-            [FromServices] IRepository<BuildModel> buildRepository,
-            [FromServices] IRepository<BuildSystemModel> buildSystemRepository)
+            [FromServices] UserScopedRepository<BuildModel> buildRepository,
+            [FromServices] UserScopedRepository<BuildSystemModel> buildSystemRepository)
         {
-            var builds = await buildRepository.GetMany(build => build.AccountEmail == accountDetails.Email, accountDetails.Email);
-            var systems = await buildSystemRepository.GetMany(system => system.AccountEmail == accountDetails.Email, accountDetails.Email);
+            var builds = await buildRepository.GetAll();
+            var systems = await buildSystemRepository.GetAll();
             
             var groupBuilds = builds
                 .Select(build => build.ToBuildResponseDto())

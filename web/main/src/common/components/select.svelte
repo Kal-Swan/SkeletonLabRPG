@@ -4,16 +4,22 @@
 	let {
 		options,
 		value = $bindable(),
-		isMenu = false
+		isMenu = false,
+		onChange
 	} = $props<{
 		options: Array<{ id: T; name: string }>;
-		value: T;
+		value?: T;
 		isMenu?: boolean;
+		onChange?: (value: T) => void;
 	}>();
 	let open = $state(false);
 	let selected = $state<T>();
 
 	const onSelect = (id: T) => {
+		if (onChange != null) {
+			onChange(id);
+		}
+
 		value = id;
 		selected = id;
 		open = false;

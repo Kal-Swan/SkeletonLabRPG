@@ -14,7 +14,8 @@ export const Actions = {
 	deleteRpgBuild: 'deleteRpgBuild',
 	createRpgSystem: 'createRpgSystem',
 	updateRpgSystem: 'updateRpgSystem',
-	deleteRpgSystem: 'deleteRpgSystem'
+	deleteRpgSystem: 'deleteRpgSystem',
+	openBuildSystemFile: 'openBuildSystemFile',
 };
 
 export type ActionType = (typeof Actions)[keyof typeof Actions];

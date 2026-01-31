@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using SkeletonLabRpg.Api.Authorisation;
 using SkeletonLabRpg.Api.BuildSystem.Constants;
 using SkeletonLabRpg.Api.Endpoints;
+using SkeletonLabRpg.Common.Authorisation;
 using SkeletonLabRpg.Common.Cache;
-using SkeletonLabRpg.Common.Database;
+using SkeletonLabRpg.Common.Constants;
+using SkeletonLabRpg.Common.Database.Cosmosdb;
 using SkeletonLabRpg.Common.Database.Models.Build;
 using SkeletonLabRpg.Common.Exceptions;
 using SkeletonLabRpg.Common.Services.Interfaces;
@@ -12,38 +13,56 @@ namespace SkeletonLabRpg.Api.BuildSystem;
 
 public static class CreateBuildSystem
 {
-
-    public record Request(string Name);
-    
+    private record Response(Guid Id, string Name, IEnumerable<string> FileNames);
     public class ApiEndpoint : IEndpoint
     {
         public void MapEndpoint(IEndpointRouteBuilder builder)
         {
-            builder.MapPost(BuildSystemEndpoints.Base, Handler);
+            builder.MapPost(BuildSystemEndpoints.Base, Handler)
+                .DisableAntiforgery();
         }
 
         private static async Task<IResult> Handler(
-            [FromBody] Request request,
+            HttpRequest request,
             [FromServices] AccountDetails accountDetails,
-            [FromServices] IRepository<BuildSystemModel> repository,
-            [FromServices] ITaskCache<BuildSystemModel> cache)
+            [FromServices] UserScopedRepository<BuildSystemModel> repository,
+            [FromServices] IMemoryCache<BuildSystemModel> cache,
+            [FromServices] IBlobStorage blobStorage)
         {
-            if (string.IsNullOrWhiteSpace(request.Name))
+            var form = await request.ReadFormAsync();
+            var name = form["name"].ToString();
+            var files = form.Files;
+            
+            if (string.IsNullOrWhiteSpace(name))
             {
                 throw new BadRequestException("Rpg System Name is required", showCustomMessage: true);
             }
             
-            var rpgSystem = new BuildSystemModel
+            if (!files.Any(file => FileValidation.AllowedFileTypes.Contains(file.ContentType)))
             {
-                Name = request.Name,
-                AccountEmail = accountDetails.Email
+                throw new BadRequestException("Invalid file type, only text and pdf is allowed", showCustomMessage: true);
+            }
+            
+            var system = new BuildSystemModel
+            {
+                Name = name,
+                FileNames = files.Select(file => file.FileName)
             };
             
-            var result = await repository.Create(rpgSystem);
+            foreach (var file in files)
+            {
+                await using var stream = file.OpenReadStream();
+                await blobStorage.UploadBlobAsync(
+                    BlobStorageConstants.UserBuildSystemContainer, 
+                    $"{accountDetails.UserId}/{system.Id}/{file.FileName}",
+                    stream, file.ContentType);
+            }
             
-            cache.Invalidate(accountDetails.Email);
+            var result = await repository.Create(system);
             
-            return Results.Ok(result);
+            cache.Invalidate(accountDetails.UserId.ToString());
+            
+            return Results.Ok(new Response(result.Id, result.Name, result.FileNames));
         }
     } 
 }

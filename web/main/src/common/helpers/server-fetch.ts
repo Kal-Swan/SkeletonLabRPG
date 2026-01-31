@@ -1,6 +1,6 @@
 import type { ActiveAccount } from '@models/auth/account';
 
-async function baseServerFetch(
+export async function baseServerFetch(
 	path: string,
 	options: RequestInit,
 	token?: string | null
@@ -35,9 +35,10 @@ export async function serverGet(path: string, activeAccount: ActiveAccount): Pro
 
 export async function serverPost(
 	path: string,
-	data: Record<string, any>,
+	data: Record<string, any> | FormData,
 	activeAccount: ActiveAccount,
-	method?: string
+	method?: string,
+	contentType: string = 'application/json'
 ): Promise<Response> {
 	console.log('server post active account');
 	console.log(activeAccount?.account);
@@ -49,8 +50,8 @@ export async function serverPost(
 		path,
 		{
 			method: method ?? 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(data)
+			headers: contentType === '' ? {} : { 'Content-Type': contentType },
+			body: data instanceof FormData ? data : JSON.stringify(data)
 		},
 		activeAccount.token
 	);

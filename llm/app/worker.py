@@ -37,23 +37,32 @@ async def main():
                     try:
                         print(f"Received message: {str(msg)}")
                         build_request = json.loads(str(msg))
-                        id = build_request["id"]
+                        user_id = build_request["user_id"]
+                        build_request_id = build_request["build_request_id"]
+                        build_system_id = build_request["build_system_id"]
                         rpg_system = build_request["build_system"].lower()
                         question = build_request["question"]
-                        result = await process_data(question, rpg_system)
+                        result = await process_data(build_system_id, question, rpg_system, user_id)
+
+                        if result is None:
+                            print(f"Error no blob found")
+                            await receiver.complete_message(msg)
+                            continue
+
                         print(f"Received result: {str(result)}")
                         headers = {
                             "X-Worker-Api-Key": worker_api_key,
+                            "User-Id": user_id,
                             "Content-Type": "application/json"
                         }
 
                         print(f"api_url: {api_url}")
-                        print(f"Notifying build request api with id: {id}")
+                        print(f"Notifying build request api with id: {build_request_id}")
                         print(f"Result data: {result.model_dump()}")
                         print(f"Headers: {headers}")
 
                         response = await http_client.post(
-                            url=f"{api_url}/api/v1/buildrequest/notify/{id}",
+                            url=f"{api_url}/api/v1/buildrequest/notify/{build_request_id}",
                             json=result.model_dump(),
                             headers=headers)
                         
@@ -61,7 +70,7 @@ async def main():
                         
                         if 200 <= response.status_code < 300:
                             await receiver.complete_message(msg)
-                            print(f"Message {id} completed")
+                            print(f"Message {build_request_id} completed")
                         else:
                             await receiver.abandon_message(msg)
                             print(f"Notify failed ({response.status_code}): {response.text}")

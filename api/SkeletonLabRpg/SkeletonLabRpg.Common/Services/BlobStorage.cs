@@ -1,10 +1,11 @@
 using System.Net;
 using Azure;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging;
 using SkeletonLabRpg.Common.Services.Interfaces;
 
-namespace DEXRPG.Common.Services;
+namespace SkeletonLabRpg.Common.Services;
 
 public class BlobStorage(BlobServiceClient blobServiceClient, ILogger<BlobStorage> logger) : IBlobStorage
 {
@@ -15,7 +16,7 @@ public class BlobStorage(BlobServiceClient blobServiceClient, ILogger<BlobStorag
         return containerClient.GetBlobClient(blobName);
     }
     
-    public async Task UploadBlobAsync(string containerName, string blobName, Stream data)
+    public async Task UploadBlobAsync(string containerName, string blobName, Stream data, string contentType)
     {
         try
         {
@@ -34,6 +35,12 @@ public class BlobStorage(BlobServiceClient blobServiceClient, ILogger<BlobStorag
             }
             
             await blobClient.UploadAsync(data, overwrite: true);
+            
+            await blobClient.SetHttpHeadersAsync(new BlobHttpHeaders
+            {
+                ContentType = contentType,
+                ContentDisposition = "inline"
+            });
         }
         catch (RequestFailedException exception)
         {
@@ -47,7 +54,7 @@ public class BlobStorage(BlobServiceClient blobServiceClient, ILogger<BlobStorag
         }
     }
     
-    public async Task<Stream?> DownloadBlobAsync(string containerName, string blobName)
+    public async Task<(Stream Content, string ContentType)?> DownloadBlobAsync(string containerName, string blobName)
     {
         try
         {
@@ -55,7 +62,7 @@ public class BlobStorage(BlobServiceClient blobServiceClient, ILogger<BlobStorag
             var blobClient = containerClient.GetBlobClient(blobName);
             var response = await blobClient.DownloadAsync();
 
-            return response.Value.Content;
+            return (response.Value.Content, response.Value.ContentType);
         }
         catch (RequestFailedException exception) when (exception.Status == (int)HttpStatusCode.NotFound)
         {
@@ -72,6 +79,28 @@ public class BlobStorage(BlobServiceClient blobServiceClient, ILogger<BlobStorag
         catch (Exception exception)
         {
             logger.LogError(exception, "Unexpected error during blob download for blob '{BlobName}' in container '{ContainerName}'", blobName, containerName);
+            throw;
+        }
+    }
+    
+    public async Task DeleteBlobAsync(string containerName, string blobName)
+    {
+        try
+        {
+            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            var blobClient = containerClient.GetBlobClient(blobName);
+            await blobClient.DeleteIfExistsAsync();
+        }
+        catch (RequestFailedException exception)
+        {
+            logger.LogError(exception,
+                "Azure Storage exception during blob deletion for blob '{BlobName}' in container '{ContainerName}'. Status: {Status}, ErrorCode: {ErrorCode}",
+                blobName, containerName, exception.Status, exception.ErrorCode);
+            throw;
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Unexpected error during blob deletion for blob '{BlobName}' in container '{ContainerName}'", blobName, containerName);
             throw;
         }
     }

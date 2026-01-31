@@ -20,7 +20,7 @@ public class BuildRequestPublisher(ServiceBusClient client, IOptions<ServiceBusC
 
         var message = new ServiceBusMessage(messageBody)
         {
-            MessageId = buildRequestModel.Id.ToString(), 
+            MessageId = buildRequestModel.BuildRequestId.ToString(), 
             ContentType = "application/json"
         };
 

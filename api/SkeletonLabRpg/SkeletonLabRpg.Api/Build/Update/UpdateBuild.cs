@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using SkeletonLabRpg.Api.Authorisation;
 using SkeletonLabRpg.Api.Build.Constants;
 using SkeletonLabRpg.Api.Endpoints;
+using SkeletonLabRpg.Common.Authorisation;
 using SkeletonLabRpg.Common.Cache;
-using SkeletonLabRpg.Common.Database;
-using SkeletonLabRpg.Common.Database.Models.Build;
+using SkeletonLabRpg.Common.Database.Cosmosdb;
+using SkeletonLabRpg.Common.Database.Models.Builds;
 
 namespace SkeletonLabRpg.Api.Build.Update;
 
@@ -23,8 +23,7 @@ public static class UpdateBuild
             [FromBody] Request request,
             [FromRoute] Guid id,
             [FromServices] AccountDetails accountDetails,
-            [FromServices] IRepository<BuildModel> repository,
-            ITaskCache<BuildModel> cache)
+            [FromServices] UserScopedRepository<BuildModel> repository)
         {
             var build = await repository.GetById(id);
             
@@ -38,7 +37,6 @@ public static class UpdateBuild
             build.Reason = request.Reason;
             
             var result = await repository.Update(build);
-            cache.Invalidate(accountDetails.Email);
             
             return Results.Ok(result);
         }

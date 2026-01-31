@@ -5,4 +5,5 @@ public enum BuildRequestStatus
     None = 0,
     Processing = 10,
     Completed = 20,
+    Deleted = 30,
 }

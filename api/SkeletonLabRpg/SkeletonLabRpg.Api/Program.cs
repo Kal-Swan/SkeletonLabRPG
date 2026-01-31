@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Identity.Web;
-using SkeletonLabRpg.Api.Authorisation;
 using SkeletonLabRpg.Api.BuildRequest.External;
 using SkeletonLabRpg.Api.Configuration;
 using SkeletonLabRpg.Api.Endpoints;
@@ -12,6 +12,7 @@ using SkeletonLabRpg.Api.Exceptions;
 using SkeletonLabRpg.Api.Middlewares;
 using SkeletonLabRpg.Api.SignalR;
 using SkeletonLabRpg.Common;
+using SkeletonLabRpg.Common.Authorisation;
 using SkeletonLabRpg.Common.Configuration;
 using SkeletonLabRpg.Common.Constants;
 
@@ -20,6 +21,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddEndpoints();
+builder.Services.AddControllers();
+
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.Limits.MaxRequestBodySize = options.Limits.MaxRequestBodySize = 52_428_800;
+});
 
 var appConfiguration = builder.Configuration.GetSection(ApiConfiguration.Name).Get<ApiConfiguration>();
 builder.Services.AddHttpClient<LlmService>(client =>

@@ -1,18 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
-using SkeletonLabRpg.Api.Authorisation;
 using SkeletonLabRpg.Api.BuildRequest.Constants;
 using SkeletonLabRpg.Api.Endpoints;
-using SkeletonLabRpg.Common.Database;
+using SkeletonLabRpg.Common.Authorisation;
+using SkeletonLabRpg.Common.Database.Cosmosdb;
 using SkeletonLabRpg.Common.Database.Enums;
 using SkeletonLabRpg.Common.Database.Models.Build;
 using SkeletonLabRpg.Common.Extensions;
 using SkeletonLabRpg.Common.Services.Interfaces;
 using SkeletonLabRpg.Common.Services.Models;
-using BuildRequestModel = SkeletonLabRpg.Common.Database.Models.BuildRequest.BuildRequestModel;
+using BuildRequestModel = SkeletonLabRpg.Common.Database.Models.Build.BuildRequestModel;
 
 namespace SkeletonLabRpg.Api.BuildRequest;
 
-public static class CreateBuilds
+public static class CreateBuildRequest
 {
     public record Request(string Question, Guid BuildSystemId);
 
@@ -30,8 +30,8 @@ public static class CreateBuilds
             [FromBody] Request request,
             [FromServices] AccountDetails accountDetails,
             [FromServices] IBuildRequestPublisher queueSender,
-            [FromServices] IRepository<BuildRequestModel> buildRequestRepository,
-            [FromServices] IRepository<BuildSystemModel> buildSystemRepository)
+            [FromServices] UserScopedRepository<BuildRequestModel> buildRequestRepository,
+            [FromServices] UserScopedRepository<BuildSystemModel> buildSystemRepository)
         {
             var buildSystem = await buildSystemRepository.GetById(request.BuildSystemId);
 
@@ -44,13 +44,12 @@ public static class CreateBuilds
             {
                 Question = request.Question,
                 BuildSystemId = request.BuildSystemId,
-                Status = BuildRequestStatus.Processing,
-                AccountEmail = accountDetails.Email
+                Status = BuildRequestStatus.Processing
             };
             
             var result = await buildRequestRepository.Create(buildRequest);
             
-            var queueRequest = new QueueRequest(buildRequest.Id, request.Question, buildSystem.Name);
+            var queueRequest = new QueueRequest(accountDetails.UserId, buildRequest.Id, buildSystem.Id, request.Question, buildSystem.Name);
 
             await queueSender.SendQueueAsync(queueRequest);
             

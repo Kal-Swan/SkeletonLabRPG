@@ -50,47 +50,54 @@ parser = PydanticOutputParser(pydantic_object=LLMBuilds)
 prompt_template = ChatPromptTemplate.from_template(instruction).partial(format_instructions=parser.get_format_instructions())
 
 _faiss_db_cache = {}
+container_name = "user-build-systems"
 
-# test
-
-async def get_blob_bytes(blob_name: str) -> bytes:
+def get_blob_bytes(blob_name: str, blobServiceClient: BlobServiceClient):
     try:
-        if not blobEndpoint:
-            raise Exception("blobEndpoint is empty, AZURE_BLOB_STORAGE_URL is not set in environment variables or something else went wrong.") 
-        account_url = blobEndpoint
-        container_name = "source-files"
-        service = BlobServiceClient(account_url=account_url, credential=DefaultAzureCredential())
-        client = service.get_blob_client(container=container_name, blob=blob_name)
+        client = blobServiceClient.get_blob_client(container=container_name, blob=blob_name)
         stream = client.download_blob()
-        return stream.readall()
+        return stream
     except Exception as e:
         raise ValueError(f"Failed to retrieve file from blob: {e}")
 
-def test_fetch():
-    r = requests.get("https://bg3.wiki/wiki/Gale", headers={"User-Agent": "MyLlmApp/1.0"})
-    print(r.status_code, len(r.text))
+def get_blob_container_blobs(user_id: str, id: str, blobServiceClient: BlobServiceClient):
+    try:
+        client = blobServiceClient.get_container_client(container=container_name)
+        print(f"{user_id}/{id}/")
+        blobs = list(client.list_blobs(name_starts_with=f"{user_id}/{id}/"))
+        return blobs
+    except Exception as e:
+        raise ValueError(f"Failed to retrieve file from blob: {e}")
 
+async def process_data(build_system_id: str,question: str, rpg_system: str, user_id: str):
+    if user_id not in _faiss_db_cache:
+        if not blobEndpoint:
+            raise Exception("blobEndpoint is empty, AZURE_BLOB_STORAGE_URL is not set in environment variables or something else went wrong.") 
+        raw_documents=[]
+        account_url = blobEndpoint
+        service = BlobServiceClient(account_url=account_url, credential=DefaultAzureCredential())
+        blobs = get_blob_container_blobs(user_id, build_system_id, service)
+        for blob in blobs:
+            stream = get_blob_bytes(blob.name, service)
+            blob_bytes = stream.readall()
+            content_type = stream.properties.content_settings.content_type
+            if content_type == "text/plain":
+                file_content = blob_bytes.decode("utf-8")
+                url_list = [url.strip().replace("\r\n", "").replace('"', "") for url in file_content.split(",") if url.strip()]
+                loader = WebBaseLoader(url_list)
+                raw_documents = [doc async for doc in loader.alazy_load()]
+            elif content_type == "application/pdf":
+                pdf_file = io.BytesIO(blob_bytes)
+                reader = PdfReader(pdf_file)
+                docs = [
+                    Document(page_content=page.extract_text())
+                    for page in reader.pages
+                ]
+                raw_documents.extend(docs)
 
-async def process_data(question: str, rpg_system: str):
-    if rpg_system not in  _faiss_db_cache:
-        raw_documents = []
+        if not raw_documents:
+            return None
 
-        if rpg_system == bg3:
-            blob_bytes = await get_blob_bytes(blob_name="bg3/bg3_urls.txt")
-            file_content = blob_bytes.decode("utf-8")
-            url_list = [url.strip().replace("\r\n", "").replace('"', "") for url in file_content.split(",") if url.strip()]
-            loader = WebBaseLoader(url_list)
-            raw_documents = [doc async for doc in loader.alazy_load()]
-        elif rpg_system == daggerheart:
-            blob_bytes = await get_blob_bytes(blob_name="daggerheart/streamlined_daggerheart_core_rulebook_2.pdf")
-            pdf_file = io.BytesIO(blob_bytes)
-            reader = PdfReader(pdf_file)
-            docs = [
-                Document(page_content=page.extract_text())
-                for page in reader.pages
-            ]
-            raw_documents.extend(docs)
-            
         cleaner = Html2TextTransformer()
         documents = cleaner.transform_documents(raw_documents)
         splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
@@ -115,15 +122,16 @@ async def process_data(question: str, rpg_system: str):
         ]
 
         db = FAISS.from_embeddings(text_embeddings=text_embeddings, embedding=embeddings, metadatas=[doc.metadata for doc in batches])
-        _faiss_db_cache[rpg_system] = db
+        _faiss_db_cache[user_id] = db
     else:
-        db = _faiss_db_cache[rpg_system]
+        db = _faiss_db_cache[user_id]
 
     # The K refers to chunks of meaningful data. Highers are better for pdfs while lower for web pages
     # But will use bg3 and daggerheart for now to decide on the chunk number
+    # retriever=db.as_retriever(search_kwargs={"k": 5 if rpg_system == bg3 else 20}),
     chain = RetrievalQA.from_chain_type(
         llm=llm,
-        retriever=db.as_retriever(search_kwargs={"k": 5 if rpg_system == bg3 else 20}),
+        retriever=db.as_retriever(search_kwargs={"k": 20 }),
         chain_type="stuff",
         chain_type_kwargs={"prompt": prompt_template},
         input_key="question",
@@ -136,3 +144,4 @@ async def process_data(question: str, rpg_system: str):
         return parser.parse(result["result"])
     except Exception as e:
         raise ValueError(f"Failed to parse output as Build object: {e}\nRaw output:\n{result}")
+

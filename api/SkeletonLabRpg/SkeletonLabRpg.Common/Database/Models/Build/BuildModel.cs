@@ -1,8 +1,9 @@
+using SkeletonLabRpg.Common.Database.Cosmosdb.Constants;
 using SkeletonLabRpg.Common.Database.Cosmosdb.Entities;
 
-namespace SkeletonLabRpg.Common.Database.Models.Build;
+namespace SkeletonLabRpg.Common.Database.Models.Builds;
 
-public class BuildModel : CosmosDbDocumentBase<BuildModel>
+public class BuildModel : CosmosDbDocumentBase
 {
     public Guid BuildSystemId { get; set; }
     public string Name { get; set; }
