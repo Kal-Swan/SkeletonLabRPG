@@ -127,7 +127,7 @@ module storage './modules/storage.bicep' = {
     location: resourceGroup().location
     blobContainerNames: blobContainerNames
     queueNames: queueNames
-    managedIdentities: [container.outputs.llmContainerPrincipleId]
+    managedIdentities: [container.outputs.llmContainerPrincipleId, container.outputs.webContainerPrincipleId]
   }
 }
 
@@ -194,6 +194,10 @@ module container 'modules/container.bicep' = {
       {
         name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
         value: '~3'
+      }
+      {
+        name: 'BODY_SIZE_LIMIT'
+        value: 'Infinity'
       }
     ]
   }
