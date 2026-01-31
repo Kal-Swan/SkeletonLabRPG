@@ -1,6 +1,6 @@
 using SkeletonLabRpg.Common.Database.Enums;
 
-namespace SkeletonLabRpg.Common.Database.Models.BuildRequest;
+namespace SkeletonLabRpg.Common.Database.Models.Build;
 
 public class BuildAnswer
 {

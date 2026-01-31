@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Loading from './loading.svelte';
 	let {
 		text,
 		onClick,
@@ -9,7 +10,8 @@
 		fontSize = '14',
 		padding = '3',
 		border = true,
-		selected = false
+		selected = false,
+		loading = false
 	} = $props<{
 		text: string;
 		onClick: (value: any) => void;
@@ -21,6 +23,7 @@
 		padding?: string;
 		border?: boolean;
 		selected?: boolean;
+		loading?: boolean;
 	}>();
 	let readonly = $state(false);
 
@@ -49,7 +52,11 @@
 		style={`font-size: ${fontSize}px;`}
 		class={`${disable ? `disable-button p-${padding} text-sm` : `button-text-container ${disableBorder ? '' : `p-${padding}`} text-left text-sm`} ${selected ? 'selected' : ''}`}
 	>
-		{text}
+		{#if loading}
+			<Loading />
+		{:else}
+			{text}
+		{/if}
 	</div>
 </button>
 

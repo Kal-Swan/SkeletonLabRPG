@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using SkeletonLabRpg.Api.Authorisation;
 using SkeletonLabRpg.Api.BuildRequest.Constants;
 using SkeletonLabRpg.Api.BuildRequest.Models;
 using SkeletonLabRpg.Api.Endpoints;
-using SkeletonLabRpg.Common.Database;
+using SkeletonLabRpg.Common.Authorisation;
+using SkeletonLabRpg.Common.Database.Cosmosdb;
 using SkeletonLabRpg.Common.Database.Enums;
 using SkeletonLabRpg.Common.Database.Models.Build;
-using SkeletonLabRpg.Common.Database.Models.BuildRequest;
 
 namespace SkeletonLabRpg.Api.BuildRequest;
 
@@ -25,16 +24,13 @@ public static class GetBuildDetails
         
         private static async Task<IResult> Handler(
             [FromServices] AccountDetails accountDetails,
-            [FromServices] IRepository<BuildRequestModel> buildRequestRepository,
-            [FromServices] IRepository<BuildSystemModel> buildSystemRepository,
+            [FromServices] UserScopedRepository<BuildRequestModel> buildRequestRepository,
+            [FromServices] UserScopedRepository<BuildSystemModel> buildSystemRepository,
             [FromServices] ILogger<IEndpoint> logger)
         {
-            var buildSystems = await buildSystemRepository.GetMany(request => 
-                request.AccountEmail == accountDetails.Email, accountDetails.Email);
-            var requests = await buildRequestRepository.GetMany(
-                request => request.AccountEmail == accountDetails.Email && (request.Answers.Any(answer => answer.Status == BuildAnswerStatus.None) 
-                                                                            || !request.Answers.Any()),
-                accountDetails.Email);
+            var buildSystems = await buildSystemRepository.GetAll();
+            var requests = await buildRequestRepository.GetManyByPredicate(
+                request => request.Answers.Any(answer => answer.Status == BuildAnswerStatus.None) || !request.Answers.Any());
             
             var buildSystemDictionary = buildSystems.ToDictionary(system => system.Id, model => model.Name);
             

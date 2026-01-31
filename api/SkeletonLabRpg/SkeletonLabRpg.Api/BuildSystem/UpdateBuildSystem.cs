@@ -1,17 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
-using SkeletonLabRpg.Api.Authorisation;
 using SkeletonLabRpg.Api.BuildSystem.Constants;
 using SkeletonLabRpg.Api.Endpoints;
+using SkeletonLabRpg.Common.Authorisation;
 using SkeletonLabRpg.Common.Cache;
-using SkeletonLabRpg.Common.Database;
+using SkeletonLabRpg.Common.Constants;
+using SkeletonLabRpg.Common.Database.Cosmosdb;
 using SkeletonLabRpg.Common.Database.Models.Build;
 using SkeletonLabRpg.Common.Exceptions;
+using SkeletonLabRpg.Common.Services.Interfaces;
 
 namespace SkeletonLabRpg.Api.BuildSystem;
 
 public static class UpdateBuildSystem
 {
-    private record Request(string Name);
+    private record Request(string Name, [FromForm] List<IFormFile> Files);
     
     public class ApiEndpoint : IEndpoint
     {
@@ -24,20 +26,29 @@ public static class UpdateBuildSystem
             [FromRoute] Guid id,
             [FromBody] Request request,
             [FromServices] AccountDetails accountDetails,
-            [FromServices] IRepository<BuildSystemModel> repository,
-            [FromServices] ITaskCache<BuildSystemModel> cache)
+            [FromServices] UserScopedRepository<BuildSystemModel> repository,
+            [FromServices] IBlobStorage blobStorage)
         {
             var current = await repository.GetById(id);
 
             if (current is null)
             {
-                throw new NotFoundException("Rpg System not found", showCustomMessage: true);
+                throw new NotFoundException("Build System not found", showCustomMessage: true);
             }
 
             current.Name = request.Name;
+            current.FileNames = request.Files.Select(file => file.FileName);
+            
+            foreach (var file in request.Files)
+            {
+                await using var stream = file.OpenReadStream();
+                await blobStorage.UploadBlobAsync(
+                    BlobStorageConstants.UserBuildSystemContainer, 
+                    $"{current.Id}/{file.FileName}",
+                    stream, file.ContentType);
+            }
             
             var updated = await repository.Update(current);
-            cache.Invalidate(accountDetails.Email, id.ToString());
             return Results.Ok(updated);
         }
     }

@@ -1,5 +1,6 @@
 using SkeletonLabRpg.Api.Build.GetAll;
 using SkeletonLabRpg.Common.Database.Models.Build;
+using SkeletonLabRpg.Common.Database.Models.Builds;
 
 namespace SkeletonLabRpg.Api.Build.Extensions;
 

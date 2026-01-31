@@ -9,18 +9,33 @@ import { get } from 'svelte/store';
 import { msalInstanceStore } from '@lib/stores/auth';
 import { configStore } from '@lib/stores/config-store';
 
+type ClientFetchValue =
+	| string
+	| number
+	| boolean
+	| File
+	| Blob
+	| null
+	| undefined
+	| ClientFetchValue[]
+	| { [key: string]: ClientFetchValue };
+
 export interface Result<TResult> {
 	data?: TResult;
 	isSuccess?: boolean;
 	fieldErrors?: Record<string, string[]>;
+	response?: Response;
 }
 
 export const clientFetch = async <TResult>(
 	path: string,
 	action: ActionType,
-	data: Record<string, any>
+	data: Record<string, ClientFetchValue>,
+	returnResponse?: boolean
 ): Promise<Result<TResult>> => {
 	try {
+		console.log('data');
+		console.log(data);
 		const account = get(activeAccount);
 		const msal = get(msalInstanceStore);
 		const config = get(configStore);
@@ -35,28 +50,49 @@ export const clientFetch = async <TResult>(
 			account: account?.account!
 		});
 
-		const bodyPayload: Record<string, any> = {
-			action,
-			data,
-			activeAccount: {
-				account: account?.account,
-				token: tokenResponse.accessToken
+		const hasFiles = containsFile(data);
+
+		let body: BodyInit;
+		let headers: HeadersInit | undefined;
+
+		if (hasFiles) {
+			const formData = new FormData();
+
+			formData.append('action', action);
+			formData.append(
+				'activeAccount',
+				JSON.stringify({
+					account: account?.account,
+					token: tokenResponse.accessToken
+				})
+			);
+
+			for (const [key, value] of Object.entries(data)) {
+				appendFormData(formData, `data.${key}`, value);
 			}
-		};
 
-		console.log('clientfetch body');
-		console.log(bodyPayload);
+			body = formData;
+			headers = undefined;
+		} else {
+			body = JSON.stringify({
+				action,
+				data,
+				activeAccount: {
+					account: account?.account,
+					token: tokenResponse.accessToken
+				}
+			});
 
-		console.log('path');
-		console.log(path);	
+			headers = { 'Content-Type': 'application/json' };
+		}
 
-		console.log('data');
-		console.log(data);
+		console.log('body');
+		console.log(body);
 
 		const response = await fetch(path, {
 			method: 'POST',
-			body: JSON.stringify(bodyPayload),
-			headers: { 'Content-Type': 'application/json' }
+			body: body,
+			headers: headers
 		});
 
 		console.log('clientfetch');
@@ -95,6 +131,14 @@ export const clientFetch = async <TResult>(
 		}
 
 		console.log('getting json');
+
+		if (returnResponse) {
+			return {
+				response: response,
+				isSuccess: true
+			};
+		}
+
 		const json = await response.json();
 
 		console.log('have json');
@@ -116,3 +160,46 @@ export const clientFetch = async <TResult>(
 		return { isSuccess: false };
 	}
 };
+
+function containsFile(value: unknown): boolean {
+	if (value instanceof File || value instanceof Blob) return true;
+
+	if (Array.isArray(value)) {
+		return value.some(containsFile);
+	}
+
+	if (typeof value === 'object' && value !== null) {
+		return Object.values(value).some(containsFile);
+	}
+
+	return false;
+}
+
+function appendFormData(formData: FormData, key: string, value: ClientFetchValue) {
+	console.log('key');
+	console.log(key);
+	console.log('value');
+	console.log(value);
+	if (value === undefined || value === null) return;
+
+	if (value instanceof File || value instanceof Blob) {
+		formData.append(key, value);
+		return;
+	}
+
+	if (Array.isArray(value)) {
+		value.forEach((v, i) => {
+			appendFormData(formData, `${key}[${i}]`, v);
+		});
+		return;
+	}
+
+	if (typeof value === 'object') {
+		for (const [k, v] of Object.entries(value)) {
+			appendFormData(formData, `${key}.${k}`, v);
+		}
+		return;
+	}
+
+	formData.append(key, String(value));
+}

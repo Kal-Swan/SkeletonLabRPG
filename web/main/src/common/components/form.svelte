@@ -47,7 +47,15 @@
 			formErrorsStore.set(zodFieldErrorExtraction(parsed.error));
 		}
 	}
-	let isDataValid = $derived(schema.safeParse(data).success);
+	let validationMessages = $derived(ValidationMessage());
+
+	function ValidationMessage() {
+		const parsed = schema.safeParse(data);
+		if (parsed.error) {
+			return zodFieldErrorExtraction(parsed.error);
+		}
+		return [];
+	}
 
 	$effect(() => {
 		const parsed = schema.safeParse(data);
@@ -62,7 +70,7 @@
 	<div class={`flex ${handleDelete ? 'justify-between' : 'justify-end'}`}>
 		{#if handleDelete}
 			<div>
-				<TextButton disable={!isDataValid} text="Delete" onClick={handleDelete} />
+				<TextButton disable={validationMessages.length > 0} text="Delete" onClick={handleDelete} />
 			</div>
 		{/if}
 		<div class="flex justify-end gap-2">
@@ -74,7 +82,7 @@
 					<Loading />
 				{:else}
 					<TextButton
-						disable={!isDataValid}
+						disable={validationMessages.length > 0}
 						text={saveButtonText}
 						onClick={handleValidationOnSave}
 					/>
@@ -82,4 +90,13 @@
 			</div>
 		</div>
 	</div>
+	{#each validationMessages as error (error.field)}
+		<div class="error text-sm">{error.message}</div>
+	{/each}
 </div>
+
+<style>
+	.error {
+		color: var(--error);
+	}
+</style>

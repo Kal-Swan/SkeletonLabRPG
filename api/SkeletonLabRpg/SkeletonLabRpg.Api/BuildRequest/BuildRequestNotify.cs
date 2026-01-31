@@ -5,11 +5,14 @@ using SkeletonLabRpg.Api.BuildRequest.Models;
 using SkeletonLabRpg.Api.Endpoints;
 using SkeletonLabRpg.Api.Filters;
 using SkeletonLabRpg.Api.SignalR;
+using SkeletonLabRpg.Common.Authorisation;
+using SkeletonLabRpg.Common.Cache;
 using SkeletonLabRpg.Common.Database;
+using SkeletonLabRpg.Common.Database.Cosmosdb;
 using SkeletonLabRpg.Common.Database.Enums;
 using SkeletonLabRpg.Common.Database.Models.Build;
-using SkeletonLabRpg.Common.Database.Models.BuildRequest;
-using BuildRequestModel = SkeletonLabRpg.Common.Database.Models.BuildRequest.BuildRequestModel;
+using SkeletonLabRpg.Common.Database.Models.User;
+using BuildRequestModel = SkeletonLabRpg.Common.Database.Models.Build.BuildRequestModel;
 
 namespace SkeletonLabRpg.Api.BuildRequest;
 
@@ -27,12 +30,14 @@ public static class BuildRequestNotify
         }
         
         private static async Task<IResult> Handler(
-            [FromRoute]Guid id,
+            [FromRoute] Guid id,
             [FromBody] LlmBuilds llmBuilds,
-            [FromServices] IRepository<BuildRequestModel> repository,
-            [FromServices] IRepository<BuildSystemModel> buildSystemRepository,
+            [FromServices] UserScopedRepository<BuildRequestModel> repository,
+            [FromServices] UserScopedRepository<BuildSystemModel> buildSystemRepository,
+            [FromServices] IRepository<UserAccount> userAccountRepository,
             [FromServices] IHubContext<BuildHub> buildHubContext,
-            [FromServices] ILogger<Endpoint> logger)
+            [FromServices] ILogger<Endpoint> logger,
+            [FromServices] AccountDetails accountDetails)
         {
             var buildRequest = await repository.GetById(id);
             
@@ -63,8 +68,10 @@ public static class BuildRequestNotify
                 buildRequest.Status,
                 buildRequest.Answers,
                 buildRequest.Modified);
+            
+            var user = await userAccountRepository.GetById(accountDetails.UserId);
 
-            await buildHubContext.Clients.User(buildRequest.AccountEmail).SendAsync("BuildCompleted", buildRequestResponse);
+            await buildHubContext.Clients.User(user.AzureOID).SendAsync("BuildCompleted", buildRequestResponse);
 
             return Results.Accepted();
         }

@@ -1,5 +1,5 @@
 using SkeletonLabRpg.Common.Database.Enums;
-using SkeletonLabRpg.Common.Database.Models.BuildRequest;
+using SkeletonLabRpg.Common.Database.Models.Build;
 
 namespace SkeletonLabRpg.Api.BuildRequest.Models;
 

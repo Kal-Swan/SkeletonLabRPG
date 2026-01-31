@@ -7,4 +7,5 @@ public static class BuildSystemEndpoints
     public const string Base = $"{EndpointConstants.BaseEndpoint}/buildsystem";
     public const string Update = $"{Base}/{{id:guid}}";
     public const string Delete = $"{Base}/{{id:guid}}";
+    public const string File = $"{Base}/{{id:guid}}/{{fileName}}";
 }

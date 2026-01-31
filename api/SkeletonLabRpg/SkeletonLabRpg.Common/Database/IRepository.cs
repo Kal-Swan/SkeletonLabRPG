@@ -6,7 +6,9 @@ public interface IRepository<T> where T : class
 {
     Task<T> Create(T model);
     Task<T?> GetById(Guid id);
-    Task<IEnumerable<T>> GetMany(Expression<Func<T, bool>> predicate, string accountEmail);
+    Task<IEnumerable<T>> GetManyByPredicate(Expression<Func<T, bool>> predicate);
+
+    Task<IEnumerable<T>> GetAll();
 
     Task<bool> DeleteMany(Expression<Func<T, bool>> predicate);
     Task<T> Update(T entity);
@@ -15,5 +17,7 @@ public interface IRepository<T> where T : class
     
     Task<T> Update(Guid id, T entity);
 
-    Task<T?> GetByPredicate(Expression<Func<T, bool>> predicate);
+    Task<T?> GetSingleByPredicate(Expression<Func<T, bool>> predicate);
+
+    Task<T> GetOrCreateAsync(T entity, Expression<Func<T, bool>> predicate);
 }

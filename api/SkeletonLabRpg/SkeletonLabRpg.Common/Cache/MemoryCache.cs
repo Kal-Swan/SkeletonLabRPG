@@ -4,7 +4,7 @@ using SkeletonLabRpg.Common.Services.Interfaces;
 
 namespace SkeletonLabRpg.Common.Cache;
 
-public class TaskCache<T> : ITaskCache<T>
+public class MemoryCache<T> : IMemoryCache<T>
 {
     private readonly MemoryCache _cache = new(new MemoryCacheOptions
     {
@@ -49,16 +49,11 @@ public class TaskCache<T> : ITaskCache<T>
         return currentValues;
     }
 
-    public void Invalidate(string? emailAccountForCollectionCached, string? singleCachedKey)
+    public void Invalidate(string partitionKey)
     {
-        if (emailAccountForCollectionCached is not null)
+        foreach (var cacheType in Enum.GetValues<CacheType>())
         {
-            _cache.Remove(CacheKeys.GetRepositoryGetManyByType<T>(emailAccountForCollectionCached));
-        }
-
-        if (singleCachedKey is not null)
-        {
-            _cache.Remove(singleCachedKey);
+            _cache.Remove($"{partitionKey}-{cacheType}");
         }
     }
 }

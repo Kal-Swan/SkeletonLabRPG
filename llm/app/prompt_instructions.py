@@ -52,11 +52,11 @@ Follow these principles strictly:
 
 7. **Reasoning**
    - Justify all major choices.
-   - Explain how they work together to fulfill the player’s stated goal.
+   - Explain how they work together to fulfill the player's stated goal.
    - Do not give vague answers e.g. "Powerful feat/skill" etc.
 
 8. **Combat Style Consistency**
-   - Do not combine mechanics that conflict in combat focus. For example:
+   - Do not combine mechanics that conflict in combat focus.
 
 9. **Multiclassing**
     - If multiclassing, ensure it is done to enhance the build's core combat effectiveness.

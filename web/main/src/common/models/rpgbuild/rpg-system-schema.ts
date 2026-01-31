@@ -1,13 +1,54 @@
 import z from 'zod';
 
-export const rpgSystemSchema = z.object({
+const FileMaxSize = 52_428_800; // 50MB
+
+export const buildSystemSchema = z
+	.object({
+		id: z.string(),
+		name: z.string().min(1, 'Name is required'),
+		fileNames: z.array(z.string()),
+		files: z
+			.array(
+				z
+					.instanceof(File)
+					.refine((file) => ['application/pdf', 'text/plain'].includes(file.type), {
+						message: 'Invalid file type, only PDF and TXT are allowed'
+					})
+					.refine((file) => file.size <= FileMaxSize, { message: 'File size exceeds 50MB' })
+			)
+			.optional()
+	})
+	.refine(
+		(schema) => {
+			if (schema.fileNames.length === 0 && !schema.files?.length) {
+				return false;
+			}
+			return true;
+		},
+		{
+			message: 'At least one file is required',
+			path: ['files']
+		}
+	);
+
+export const createBuildSystemSchema = z.object({
+	name: z.string().min(1, 'Name is required'),
+	files: z
+		.array(
+			z
+				.instanceof(File)
+				.refine((file) => ['application/pdf', 'text/plain'].includes(file.type), {
+					message: 'Invalid file type, only PDF and TXT are allowed'
+				})
+				.refine((file) => file.size <= FileMaxSize, { message: 'File size exceeds 50MB' })
+		)
+		.min(1, 'At least one file is required')
+});
+
+export const openBuildSystemFileSchema = z.object({
 	id: z.string(),
-	name: z.string().min(1, 'Name is required')
+	fileName: z.string()
 });
 
-export const createRpgSystemSchema = z.object({
-	name: z.string().min(1, 'Name is required')
-});
-
-export type rpgSystemSchemaType = z.infer<typeof rpgSystemSchema>;
-export type createRpgSystemSchemaType = z.infer<typeof createRpgSystemSchema>;
+export type buildSystemSchemaType = z.infer<typeof buildSystemSchema>;
+export type createBuildSystemSchemaType = z.infer<typeof createBuildSystemSchema>;
