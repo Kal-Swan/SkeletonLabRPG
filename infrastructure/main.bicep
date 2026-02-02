@@ -2,7 +2,7 @@ param prefix string = 'skeletonlabrpg'
 param environment string = 'uat'
 param userGroupId string = 'eea6a68d-8077-49d1-823d-376f3de41030'
 param userObjectId string = '2b5083d4-974c-47fa-893f-8352ac9678eb'
-// var appConfigEndpoint = 'https://${prefix}-appconfig-shared.azconfig.io'
+var appConfigEndpoint = 'https://skeletonlabrpg-shared-appconfig.azconfig.io'
 var appConfigName = '${prefix}-shared-appconfig'
 param queueNames array = [
   'buildrequests'
@@ -11,6 +11,82 @@ param blobContainerNames array = [
   'characterattributemodels'
   'characterattributemltraining'
 ]
+
+// param useExistingContainerApp bool = true
+
+module container './modules/container.bicep' = {
+  name: 'containerModule'
+  params: {
+    imageTag: '71-270be6a5'
+    // useExistingContainerApp: useExistingContainerApp
+    // apiAppName: '${prefix}-api-${environment}-container'
+    // webAppName: '${prefix}-web-${environment}-container'
+    // llmAppName: '${prefix}-llm-${environment}-container'
+    containerEnvName: '${prefix}-${environment}-container-env'
+    webAppName: '${prefix}-web-${environment}-container'
+    apiAppName: '${prefix}-api-${environment}-container'
+    llmAppName: '${prefix}-llm-${environment}-container'
+    acrName: '${prefix}${environment}acr'
+    llmApiAppSettings: [
+      {
+        name: 'AZURE_BLOB_STORAGE_URL'
+        value: 'https://skeletonlabrpguatstorage.blob.core.windows.net/'
+      }
+      {
+        name: 'LLM_ENV'
+        value: 'uat'
+      }
+      {
+        name: 'AZURE_OPEN_AI_ENDPOINT'
+        value: 'https://skeletonlabrpguatopenai.openai.azure.com'
+      }
+      {
+        name: 'AZURE_AI_TEXT_EMBEDDING'
+        value: 'skeletonlabrpg-text-embedding-3-small'
+      }
+      {
+        name: 'AZURE_APP_CONFIGURATION_ENDPOINT'
+        value: appConfigEndpoint
+      }
+    ]
+    apiAppSettings: [
+      {
+        name: 'ASPNETCORE_ENVIRONMENT'
+        value: 'UAT'
+      }
+      {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        value: apiAppInsights.outputs.connectionString
+      }
+      {
+        name: 'Configuration__AzureAppConfigurationEndpoint'
+        value: appConfigEndpoint
+      }
+    ]
+    webAppSettings: [
+      {
+        name: 'PUBLIC_ENV'
+        value: 'uat'
+      }
+      {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        value: webAppInsights.outputs.connectionString
+      }
+      {
+        name: 'InstrumentationEngineExtensionVersion'
+        value: 'latest'
+      }
+      {
+        name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+        value: '~3'
+      }
+      {
+        name: 'BODY_SIZE_LIMIT'
+        value: 'Infinity'
+      }
+    ]
+  }
+}
 
 module appConfig './modules/app-config.bicep' = {
   name: 'appConfigModule'
@@ -110,6 +186,7 @@ module apiAppInsights './modules/app-insights.bicep' = {
 //   }
 // }
 
+
 module cosmosdb './modules/cosmosdb.bicep' = {
   name: 'cosmosdbModule'
   params: {
@@ -127,7 +204,7 @@ module storage './modules/storage.bicep' = {
     location: resourceGroup().location
     blobContainerNames: blobContainerNames
     queueNames: queueNames
-    managedIdentities: [container.outputs.llmContainerPrincipleId, container.outputs.webContainerPrincipleId]
+    managedIdentities: [container.outputs.llmContainerPrincipleId, container.outputs.apiContainerPrincipleId]
   }
 }
 
@@ -135,71 +212,6 @@ module keyVault './modules/key-vault.bicep' = {
   name: 'keyvault'
   params: {
     name: '${prefix}-${environment}-kv'
-  }
-}
-
-module container 'modules/container.bicep' = {
-  name: 'containerModule'
-  params: {
-    containerEnvName: '${prefix}-${environment}-container-env'
-    webAppName: '${prefix}-web-${environment}-container'
-    apiAppName: '${prefix}-api-${environment}-container'
-    llmAppName: '${prefix}-llm-${environment}-container'
-    acrName: '${prefix}${environment}acr'
-    llmApiAppSettings: [
-      {
-        name: 'AZURE_BLOB_STORAGE_URL'
-        value: 'https://skeletonlabrpguatstorage.blob.core.windows.net/'
-      }
-      {
-        name: 'Environment'
-        value: 'UAT'
-      }
-      {
-        name: 'AZURE_OPEN_AI_ENDPOINT'
-        value: 'https://skeletonlabrpguatopenai.openai.azure.com'
-      }
-      {
-        name: 'AZURE_AI_TEXT_EMBEDDING'
-        value: 'skeletonlabrpg-text-embedding-3-small'
-      }
-    ]
-    apiAppSettings: [
-      {
-        name: 'ASPNETCORE_ENVIRONMENT'
-        value: 'UAT'
-      }
-      {
-        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-        value: apiAppInsights.outputs.connectionString
-      }
-      {
-        name: 'Configuration__AzureAppConfigurationEndpoint'
-        value: 'https://skeletonlabrpg-shared-appconfig.azconfig.io'
-      }
-    ]
-    webAppSettings: [
-      {
-        name: 'PUBLIC_ENV'
-        value: 'uat'
-      }
-      {
-        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-        value: webAppInsights.outputs.connectionString
-      }
-      {
-        name: 'InstrumentationEngineExtensionVersion'
-        value: 'latest'
-      }
-      {
-        name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
-        value: '~3'
-      }
-      {
-        name: 'BODY_SIZE_LIMIT'
-        value: 'Infinity'
-      }
-    ]
   }
 }
 
