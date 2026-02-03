@@ -7,7 +7,7 @@ param apiAppSettings array
 param webAppSettings array
 param llmApiAppSettings array
 // param subnetId string
-param imageTag string = 'latest'
+param imageTag string
 
 resource acr 'Microsoft.ContainerRegistry/registries@2025-04-01' = {
   name: acrName

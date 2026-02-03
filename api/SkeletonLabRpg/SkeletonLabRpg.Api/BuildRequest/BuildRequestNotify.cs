@@ -70,6 +70,8 @@ public static class BuildRequestNotify
                 buildRequest.Modified);
             
             var user = await userAccountRepository.GetById(accountDetails.UserId);
+            
+            logger.LogInformation("BuildRequestNotify: Notifying user by account details User Id {UserId} with Azure OID {AzureOID}", accountDetails.UserId, user.AzureOID);
 
             await buildHubContext.Clients.User(user.AzureOID).SendAsync("BuildCompleted", buildRequestResponse);
 
