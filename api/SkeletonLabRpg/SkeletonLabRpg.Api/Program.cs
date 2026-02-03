@@ -135,6 +135,7 @@ app.UseAuthorization();
 app.UseMiddleware<ScopeAuthorisationMiddleware>();
 app.UseMiddleware<AccountEnrichmentMiddleware>();
 
+logger.LogInformation("testing logs in program file");
 logger.LogInformation("cors config web: {WEB}", corsConfiguration.Web);
 
 app.MapHub<BuildHub>(buildHubEndpointPath);
