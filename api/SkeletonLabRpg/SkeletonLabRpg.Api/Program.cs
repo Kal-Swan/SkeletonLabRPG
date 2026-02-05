@@ -117,6 +117,7 @@ builder.Logging.SetMinimumLevel(LogLevel.Information);
 var app = builder.Build();
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("testing logs in program file");
+logger.LogInformation("testing logs in program file 2");
 logger.LogInformation("cors config web: {WEB}", corsConfiguration.Web);
 
 app.UseExceptionHandler(_ => {});
