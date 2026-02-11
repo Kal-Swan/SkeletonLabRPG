@@ -3,6 +3,7 @@ import { id } from 'zod/v4/locales';
 
 export enum BuildRequestStatus {
 	None = 0,
+	Queued = 5,
 	Processing = 10,
 	Completed = 20
 }
@@ -32,7 +33,14 @@ export const buildRequest = z.object({
 	buildSystemName: z.string(),
 	status: z.nativeEnum(BuildRequestStatus),
 	answers: z.array(answer),
-	latestProcessedDate: z.date()
+	latestProcessedDate: z.date(),
+	progression: z.number().min(0).max(100)
+});
+
+export const buildRequestProgress = z.object({
+	id: z.string(),
+	status: z.nativeEnum(BuildRequestStatus),
+	progression: z.number().min(0).max(100)
 });
 
 export const buildSystem = z.object({
@@ -50,3 +58,4 @@ export type buildRequestType = z.infer<typeof buildRequest>;
 export type buildSystemType = z.infer<typeof buildSystem>;
 export type buildAnswerType = z.infer<typeof answer>;
 export type buildRequestAnswerType = z.infer<typeof buildRequestAnswer>;
+export type buildRequestProgressType = z.infer<typeof buildRequestProgress>;

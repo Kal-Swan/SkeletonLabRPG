@@ -2,6 +2,7 @@ import os
 import time
 import io
 from dotenv import load_dotenv
+from httpx import AsyncClient
 from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from langchain.document_loaders import WebBaseLoader
@@ -13,6 +14,8 @@ from langchain.output_parsers import PydanticOutputParser
 from langchain.schema import Document
 from openai import RateLimitError
 from langchain.document_transformers import Html2TextTransformer
+
+from .progression import send_progress
 from .build_model import LLMBuilds
 from .prompt_instructions import instruction
 from .constants import bg3, daggerheart
@@ -69,7 +72,7 @@ def get_blob_container_blobs(user_id: str, id: str, blobServiceClient: BlobServi
     except Exception as e:
         raise ValueError(f"Failed to retrieve file from blob: {e}")
 
-async def process_data(build_system_id: str,question: str, rpg_system: str, user_id: str):
+async def process_data(build_system_id: str,question: str, rpg_system: str, user_id: str, api_url: str, headers: dict, build_request_id: str):
     if user_id not in _faiss_db_cache:
         if not blobEndpoint:
             raise Exception("blobEndpoint is empty, AZURE_BLOB_STORAGE_URL is not set in environment variables or something else went wrong.") 
@@ -77,6 +80,7 @@ async def process_data(build_system_id: str,question: str, rpg_system: str, user
         account_url = blobEndpoint
         service = BlobServiceClient(account_url=account_url, credential=DefaultAzureCredential())
         blobs = get_blob_container_blobs(user_id, build_system_id, service)
+        send_progress(api_url, headers, build_request_id, 25)
         for blob in blobs:
             stream = get_blob_bytes(blob.name, service)
             blob_bytes = stream.readall()
@@ -94,7 +98,7 @@ async def process_data(build_system_id: str,question: str, rpg_system: str, user
                     for page in reader.pages
                 ]
                 raw_documents.extend(docs)
-
+        send_progress(api_url, headers, build_request_id, 50)
         if not raw_documents:
             return None
 
@@ -120,10 +124,11 @@ async def process_data(build_system_id: str,question: str, rpg_system: str, user
             (doc.page_content, vector)
             for doc, vector in zip(batches, embedded_chunks)
         ]
-
+        send_progress(api_url, headers, build_request_id, 75)
         db = FAISS.from_embeddings(text_embeddings=text_embeddings, embedding=embeddings, metadatas=[doc.metadata for doc in batches])
         _faiss_db_cache[user_id] = db
     else:
+        send_progress(api_url, headers, build_request_id, 75)
         db = _faiss_db_cache[user_id]
 
     # The K refers to chunks of meaningful data. Highers are better for pdfs while lower for web pages
@@ -138,8 +143,8 @@ async def process_data(build_system_id: str,question: str, rpg_system: str, user
         return_source_documents=True
     )
     combined_question = f"You are an expert RPG strategist specializing in {rpg_system}.\n {question}"
-
     result = await chain.ainvoke({"question": combined_question})
+    send_progress(api_url, headers, build_request_id, 100)
     try:
         return parser.parse(result["result"])
     except Exception as e:

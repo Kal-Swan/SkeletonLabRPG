@@ -2,9 +2,10 @@ using System.Text.Json.Serialization;
 
 namespace SkeletonLabRpg.Common.Services.Models;
 
-public record QueueRequest(Guid UserId, Guid BuildRequestId, Guid BuildSystemId, string Question, string BuildSystem)
+public record QueueRequest(Guid UserId, string AzureOId, Guid BuildRequestId, Guid BuildSystemId, string Question, string BuildSystem)
 {
     [JsonPropertyName("user_id")] public Guid UserId { get; set; } = UserId;
+    [JsonPropertyName("azure_oid")] public string AzureOId { get; set; } = AzureOId;
     [JsonPropertyName("build_request_id")] public Guid BuildRequestId { get; set; } = BuildRequestId;
     [JsonPropertyName("build_system_id")] public Guid BuildSystemId { get; set; } = BuildSystemId;
     [JsonPropertyName("question")] public string Question { get; set; } = Question;

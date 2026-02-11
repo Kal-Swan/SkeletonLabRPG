@@ -6,7 +6,6 @@ using SkeletonLabRpg.Api.Endpoints;
 using SkeletonLabRpg.Api.Filters;
 using SkeletonLabRpg.Api.SignalR;
 using SkeletonLabRpg.Common.Authorisation;
-using SkeletonLabRpg.Common.Cache;
 using SkeletonLabRpg.Common.Database;
 using SkeletonLabRpg.Common.Database.Cosmosdb;
 using SkeletonLabRpg.Common.Database.Enums;
@@ -16,7 +15,7 @@ using BuildRequestModel = SkeletonLabRpg.Common.Database.Models.Build.BuildReque
 
 namespace SkeletonLabRpg.Api.BuildRequest;
 
-public static class BuildRequestNotify
+public static class Notify
 {
     private record Response(Guid Id, string Question, Guid BuildSystemId, string BuildSystemName, BuildRequestStatus Status, IEnumerable<BuildAnswer> Answers, DateTimeOffset LatestProcessedDate);
     
@@ -40,6 +39,11 @@ public static class BuildRequestNotify
             [FromServices] AccountDetails accountDetails)
         {
             var buildRequest = await repository.GetById(id);
+
+            if (buildRequest.Answers.Any())
+            {
+                return Results.Accepted();
+            }
             
             if (buildRequest is null)
             {
@@ -48,6 +52,7 @@ public static class BuildRequestNotify
             }
 
             buildRequest.Status = BuildRequestStatus.Completed;
+            buildRequest.Progression = null;
             buildRequest.Answers = llmBuilds.Builds.Select(build => new BuildAnswer
             {
                 Id = Guid.NewGuid(),
@@ -56,24 +61,22 @@ public static class BuildRequestNotify
                 Reason = build.Reason
             });
             
-            await repository.Update(buildRequest);
+            var updatedBuildRequest = await repository.Update(buildRequest);
             
             var buildSystem = await buildSystemRepository.GetById(buildRequest.BuildSystemId);
 
             var buildRequestResponse = new Response(
-                buildRequest.Id,
-                buildRequest.Question,
-                buildRequest.BuildSystemId,
+                updatedBuildRequest.Id,
+                updatedBuildRequest.Question,
+                updatedBuildRequest.BuildSystemId,
                 buildSystem.Name,
-                buildRequest.Status,
-                buildRequest.Answers,
-                buildRequest.Modified);
+                updatedBuildRequest.Status,
+                updatedBuildRequest.Answers,
+                updatedBuildRequest.Modified);
             
-            var user = await userAccountRepository.GetById(accountDetails.UserId);
-            
-            logger.LogInformation("BuildRequestNotify: Notifying user by account details User Id {UserId} with Azure OID {AzureOID}", accountDetails.UserId, user.AzureOID);
+            logger.LogInformation("BuildRequestNotify: Notifying user by account details User Id {UserId} with Azure OID {AzureOID}", accountDetails.UserId, accountDetails.AzureIdentityObjectId);
 
-            await buildHubContext.Clients.User(user.AzureOID).SendAsync("BuildCompleted", buildRequestResponse);
+            await buildHubContext.Clients.User(accountDetails.AzureIdentityObjectId).SendAsync(SignalRHubMethodConstants.BuildRequestComplete, buildRequestResponse);
 
             return Results.Accepted();
         }

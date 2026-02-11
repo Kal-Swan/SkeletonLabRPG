@@ -13,23 +13,30 @@
 		buildRequestAnswer,
 		BuildRequestStatus,
 		type buildRequestAnswerType,
+		type buildRequestProgressType,
 		type buildRequestType,
 		type buildSystemType
 	} from './build-details-schema.js';
+	import { SignalRHubConstants } from './signalr-hub-constants';
+	import { Tween } from 'svelte/motion';
+	import ProcessingRequest from './processing-request.svelte';
 
 	let { data } = $props();
 	let {
 		buildSystems,
 		buildRequests
 	}: { buildSystems: buildSystemType[]; buildRequests: buildRequestType[] } = data;
-	// let builds = $state<buildSchemaType[]>(buildRequests.filter(request => request.status === BuildRequestStatus.Completed).flatMap(request => request.answers.map(answer => ({ ...answer, id: crypto.randomUUID(), buildSystemId: request.buildSystemId, question: request.question, buildRequestId: request.id, latestProcessedDate: request.latestProcessedDate }))) || null);
 	let loadingAnswer = $state(false);
 	let loadingBuildSave = $state<string>('');
 	let currentBuildRequests = $state<buildRequestType[]>(
 		buildRequests.filter((request) => request.status === BuildRequestStatus.Completed) || []
 	);
 	let currentProcessingRequests = $state<buildRequestType[]>(
-		buildRequests.filter((request) => request.status === BuildRequestStatus.Processing) || []
+		buildRequests.filter(
+			(request) =>
+				request.status === BuildRequestStatus.Processing ||
+				request.status === BuildRequestStatus.Queued
+		) || []
 	);
 	let rpgBuildQuestion = $state({
 		question: '',
@@ -143,7 +150,7 @@
 		async function buildRequestListener() {
 			await hubConnection.start();
 
-			hubConnection.on('BuildCompleted', (data) => {
+			hubConnection.on(SignalRHubConstants.BuildRequestComplete, (data) => {
 				loadingAnswer = false;
 				const resultBuildRequest = data as buildRequestType;
 				currentBuildRequests = [...currentBuildRequests, resultBuildRequest];
@@ -208,14 +215,13 @@
 	</Form>
 </div>
 
-{#if currentProcessingRequests.some((request) => request.status === BuildRequestStatus.Processing)}
+{#if currentProcessingRequests.some((request) => request.status === BuildRequestStatus.Processing || request.status === BuildRequestStatus.Queued)}
 	<div class="mb-4">
 		<Label text="Processing Requests" textSize="text-lg" />
 		{#each currentProcessingRequests
-			.filter((request) => request.status === BuildRequestStatus.Processing)
+			.filter((request) => request.status === BuildRequestStatus.Processing || request.status === BuildRequestStatus.Queued)
 			.sort((a, b) => a.buildSystemName.localeCompare(b.buildSystemName)) as request}
-			<Label text={request.buildSystemName} textSize="text-sm" />
-			<p class="text-sm text-gray-700">Question: {request.question}</p>
+			<ProcessingRequest {request} />
 		{/each}
 	</div>
 {/if}

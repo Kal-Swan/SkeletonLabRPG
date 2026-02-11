@@ -12,15 +12,20 @@ namespace SkeletonLabRpg.Api.Middlewares;
 public class AccountEnrichmentMiddleware(RequestDelegate next)
 {
     private const string HeaderUserIdName = "User-Id";
+    private const string HeaderAoidName = "Azure-OId";
     public async Task InvokeAsync(HttpContext context, 
         AccountDetails accountDetails, 
         IRepository<UserAccount> userAccountRepository,
         IMemoryCache<UserAccount> memoryCache,
         ILogger<AccountEnrichmentMiddleware> logger)
     {
-        if (context.Request.Headers.TryGetValue(HeaderUserIdName, out var userId) && Guid.TryParse(userId, out var parsedGuidUserId))
+        if (context.Request.Headers.TryGetValue(HeaderUserIdName, out var userId) 
+            && Guid.TryParse(userId, out var parsedGuidUserId) 
+            && context.Request.Headers.TryGetValue(HeaderAoidName, out var llmAzureOId) 
+            && !string.IsNullOrEmpty(llmAzureOId))
         {
             accountDetails.UserId = parsedGuidUserId;
+            accountDetails.AzureIdentityObjectId = llmAzureOId;
         }
         
         if (context.User.Identity?.IsAuthenticated == true)
