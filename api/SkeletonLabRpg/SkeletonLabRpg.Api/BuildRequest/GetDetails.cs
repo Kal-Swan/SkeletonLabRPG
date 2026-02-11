@@ -9,7 +9,7 @@ using SkeletonLabRpg.Common.Database.Models.Build;
 
 namespace SkeletonLabRpg.Api.BuildRequest;
 
-public static class GetBuildDetails
+public static class GetDetails
 {
     private record BuildSystemResponse(Guid Id, string Name);
     
@@ -44,7 +44,8 @@ public static class GetBuildDetails
                         buildSystemDictionary[request.BuildSystemId], 
                         request.Status,
                         request.Answers,
-                        request.Modified));
+                        request.Modified,
+                        request.Progression));
                         
 
             if (requests.Count() != responseRequests.Count())

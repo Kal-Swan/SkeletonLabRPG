@@ -11,7 +11,7 @@ using SkeletonLabRpg.Common.Database.Models.Builds;
 
 namespace SkeletonLabRpg.Api.BuildRequest;
 
-public static class UpdateBuildRequest
+public static class Update
 {
     private record Request(Guid Id, string Name, string Reason, string Template, BuildAnswerStatus Status);
     

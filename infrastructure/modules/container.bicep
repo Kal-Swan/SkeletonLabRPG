@@ -82,7 +82,7 @@ resource apiApp 'Microsoft.App/containerApps@2025-01-01' = {
         }
       ]
       ingress: {
-        external: false
+        // external: false
         targetPort: 8080
       }
     }

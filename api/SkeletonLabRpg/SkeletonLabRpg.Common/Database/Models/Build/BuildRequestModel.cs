@@ -10,5 +10,8 @@ public class BuildRequestModel : CosmosDbDocumentBase
     public IEnumerable<BuildAnswer> Answers { get; set; } = [];
     public Guid BuildSystemId { get; set; }
     public bool IsDeleted => Status == BuildRequestStatus.Deleted;
+    
+    public int? Progression { get; set; }
+    
     public override string ContainerName => "BuildRequests";
 }

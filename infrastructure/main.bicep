@@ -17,7 +17,7 @@ param blobContainerNames array = [
 module container './modules/container.bicep' = {
   name: 'containerModule'
   params: {
-    imageTag: '71-270be6a5'
+    imageTag: '76-bfb384fe'
     // useExistingContainerApp: useExistingContainerApp
     // apiAppName: '${prefix}-api-${environment}-container'
     // webAppName: '${prefix}-web-${environment}-container'

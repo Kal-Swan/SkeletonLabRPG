@@ -12,7 +12,7 @@ using BuildRequestModel = SkeletonLabRpg.Common.Database.Models.Build.BuildReque
 
 namespace SkeletonLabRpg.Api.BuildRequest;
 
-public static class CreateBuildRequest
+public static class Create
 {
     public record Request(string Question, Guid BuildSystemId);
 
@@ -44,12 +44,12 @@ public static class CreateBuildRequest
             {
                 Question = request.Question,
                 BuildSystemId = request.BuildSystemId,
-                Status = BuildRequestStatus.Processing
+                Status = BuildRequestStatus.Queued,
             };
             
             var result = await buildRequestRepository.Create(buildRequest);
             
-            var queueRequest = new QueueRequest(accountDetails.UserId, buildRequest.Id, buildSystem.Id, request.Question, buildSystem.Name);
+            var queueRequest = new QueueRequest(accountDetails.UserId, accountDetails.AzureIdentityObjectId, buildRequest.Id, buildSystem.Id, request.Question, buildSystem.Name);
 
             await queueSender.SendQueueAsync(queueRequest);
             
