@@ -1,16 +1,19 @@
 <script lang="ts" generics="T">
 	import Icon from '@iconify/svelte';
+	import { slide } from 'svelte/transition';
 
 	let {
 		options,
 		value = $bindable(),
 		isMenu = false,
-		onChange
+		onChange,
+		applyClassesById
 	} = $props<{
 		options: Array<{ id: T; name: string }>;
 		value?: T;
 		isMenu?: boolean;
 		onChange?: (value: T) => void;
+		applyClassesById?: Map<string, string>;
 	}>();
 	let open = $state(false);
 	let selected = $state<T>();
@@ -88,10 +91,11 @@
 	{/if}
 	{#if open}
 		<ul
+			transition:slide={{ duration: 200 }}
 			class={`ul-dropdown absolute ${isMenu ? 'right-0 w-40' : 'w-full'} z-10 mt-0 rounded shadow`}
 		>
 			{#each options as option}
-				<li>
+				<li class={applyClassesById?.get(option.id) ?? ''}>
 					<button
 						class="li-dropdown z-10 w-full cursor-pointer px-3 py-2 text-left"
 						onclick={() => onSelect(option.id)}>{option.name}</button

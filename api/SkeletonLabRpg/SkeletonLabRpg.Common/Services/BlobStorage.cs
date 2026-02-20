@@ -3,20 +3,21 @@ using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging;
+using SkeletonLabRpg.Common.Authorisation;
 using SkeletonLabRpg.Common.Services.Interfaces;
 
 namespace SkeletonLabRpg.Common.Services;
 
-public class BlobStorage(BlobServiceClient blobServiceClient, ILogger<BlobStorage> logger) : IBlobStorage
+public class BlobStorage(BlobServiceClient blobServiceClient, ILogger<BlobStorage> logger, AccountDetails accountDetails) : IBlobStorage
 {
 
-    public BlobClient GetBlobClient(string containerName, string blobName)
+    public BlobClient GetBlobClient(string containerName, Guid systemId, string blobName)
     {
         var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-        return containerClient.GetBlobClient(blobName);
+        return containerClient.GetBlobClient($"{accountDetails.UserId}/{systemId}/{blobName}");
     }
     
-    public async Task UploadBlobAsync(string containerName, string blobName, Stream data, string contentType)
+    public async Task UploadBlobAsync(string containerName, Guid systemId, string blobName, Stream data, string contentType)
     {
         try
         {
@@ -26,8 +27,8 @@ public class BlobStorage(BlobServiceClient blobServiceClient, ILogger<BlobStorag
             {
                 await containerClient.CreateAsync();
             }
-            
-            var blobClient = containerClient.GetBlobClient(blobName);
+
+            var blobClient = containerClient.GetBlobClient($"{accountDetails.UserId}/{systemId}/{blobName}");
 
             if (data.CanSeek)
             {
@@ -54,12 +55,12 @@ public class BlobStorage(BlobServiceClient blobServiceClient, ILogger<BlobStorag
         }
     }
     
-    public async Task<(Stream Content, string ContentType)?> DownloadBlobAsync(string containerName, string blobName)
+    public async Task<(Stream Content, string ContentType)?> DownloadBlobAsync(string containerName, Guid systemId, string blobName)
     {
         try
         {
             var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-            var blobClient = containerClient.GetBlobClient(blobName);
+            var blobClient = containerClient.GetBlobClient($"{accountDetails.UserId}/{systemId}/{blobName}");
             var response = await blobClient.DownloadAsync();
 
             return (response.Value.Content, response.Value.ContentType);
@@ -83,12 +84,12 @@ public class BlobStorage(BlobServiceClient blobServiceClient, ILogger<BlobStorag
         }
     }
     
-    public async Task DeleteBlobAsync(string containerName, string blobName)
+    public async Task DeleteBlobAsync(string containerName, Guid systemId, string blobName)
     {
         try
         {
             var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-            var blobClient = containerClient.GetBlobClient(blobName);
+            var blobClient = containerClient.GetBlobClient($"{accountDetails.UserId}/{systemId}/{blobName}");
             await blobClient.DeleteIfExistsAsync();
         }
         catch (RequestFailedException exception)

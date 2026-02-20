@@ -45,6 +45,9 @@
 
 		return () => media.removeEventListener('change', listener);
 	});
+
+	const applyClassesById = new Map<string, string>();
+	applyClassesById.set('signout', 'text-sm mt-2 border-t-2');
 </script>
 
 {#if isMobile}
@@ -54,7 +57,12 @@
 				<div class=" text-sm">{$activeAccount?.account?.username!}</div>
 			</div>
 			<div>
-				<Select isMenu={true} options={menuOptions} bind:value={selectedOption} />
+				<Select
+					{applyClassesById}
+					isMenu={true}
+					options={menuOptions}
+					bind:value={selectedOption}
+				/>
 			</div>
 		</div>
 	</div>

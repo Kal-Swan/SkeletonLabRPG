@@ -53,8 +53,8 @@ public static class CreateBuildSystem
             {
                 await using var stream = file.OpenReadStream();
                 await blobStorage.UploadBlobAsync(
-                    BlobStorageConstants.UserBuildSystemContainer, 
-                    $"{accountDetails.UserId}/{system.Id}/{file.FileName}",
+                    BlobStorageConstants.UserBuildSystemContainer, system.Id,
+                    file.FileName,
                     stream, file.ContentType);
             }
             

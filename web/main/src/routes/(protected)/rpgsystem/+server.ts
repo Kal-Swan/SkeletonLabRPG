@@ -3,7 +3,11 @@ import { Actions } from '@models/actions.js';
 import { serverPost, serverPut, serverDelete, baseServerFetch } from '@helpers/server-fetch.js';
 import { validateRequest } from '@helpers/zod-validation.js';
 import { rpgSystemEndpoint } from './endpoint.js';
-import { createBuildSystemSchema, buildSystemSchema } from '@models/rpgbuild/rpg-system-schema.js';
+import {
+	createBuildSystemSchema,
+	buildSystemSchema,
+	type buildSystemSchemaType
+} from '@models/rpgbuild/rpg-system-schema.js';
 import type { ActiveAccount } from '@models/auth/account.js';
 
 export async function POST({ request }) {
@@ -54,13 +58,18 @@ export async function POST({ request }) {
 				return newRpgSystem.error!;
 			}
 
-			const files = normalisedData.files as File[];
+			const formData = convertNormalisedDataToFormData(
+				newRpgSystem.data.name,
+				newRpgSystem.data.files as File[]
+			);
 
-			const formData = new FormData();
-			formData.append('name', newRpgSystem.data.name);
-			files.forEach((file) => {
-				formData.append('files', file);
-			});
+			// const files = normalisedData.files as File[];
+
+			// const formData = new FormData();
+			// formData.append('name', newRpgSystem.data.name);
+			// files.forEach((file) => {
+			// 	formData.append('files', file);
+			// });
 
 			console.log('formdata');
 			console.log(formData);
@@ -85,18 +94,47 @@ export async function POST({ request }) {
 			// 	''
 			// );
 			return createdRpgSystem;
-		case Actions.updateRpgSystem:
-			var rpgSystemData = validateRequest(data, buildSystemSchema, Actions.updateRpgSystem);
+		case Actions.updateRpgSystem: {
+			console.log('updating rpg system');
+			console.log(data);
+			const normalisedData = normalizeMultipartData(data) as buildSystemSchemaType;
+			var rpgSystemData = validateRequest(
+				normalisedData,
+				buildSystemSchema,
+				Actions.updateRpgSystem
+			);
 
 			if (!rpgSystemData.success) {
 				return rpgSystemData.error!;
 			}
 
-			const updatedResponse = await serverPut(
-				`${rpgSystemEndpoint}/${data.id}`,
-				{ name: rpgSystemData.data.name, files: rpgSystemData.data.fileNames },
-				activeAccount
+			const headers = new Headers();
+
+			if (activeAccount.token) {
+				headers.set('Authorization', `Bearer ${activeAccount.token}`);
+			}
+
+			const formData = convertNormalisedDataToFormData(
+				normalisedData.name,
+				normalisedData.files,
+				normalisedData.fileNames
 			);
+
+			const updatedResponse = await fetch(`${rpgSystemEndpoint}/${data.id}`, {
+				body: formData,
+				headers,
+				method: 'PUT'
+			});
+
+			// const updatedResponse = await serverPut(
+			// 	`${rpgSystemEndpoint}/${data.id}`,
+			// 	{
+			// 		name: rpgSystemData.data.name,
+			// 		fileNames: rpgSystemData.data.fileNames,
+			// 		files: rpgSystemData.data.files
+			// 	},
+			// 	activeAccount
+			// );
 
 			if (updatedResponse.status !== 201 && updatedResponse.status !== 200) {
 				let errorText = 'Failed to rpg system';
@@ -113,6 +151,7 @@ export async function POST({ request }) {
 			const result = await updatedResponse.json();
 
 			return json(result, { status: 200 });
+		}
 		case Actions.deleteRpgSystem:
 			const response = await serverDelete(`${rpgSystemEndpoint}/${data.id}`, activeAccount);
 
@@ -136,6 +175,22 @@ export async function POST({ request }) {
 
 			return fileResponse;
 	}
+}
+
+function convertNormalisedDataToFormData(
+	name: string,
+	files?: File[],
+	fileNames?: string[]
+): FormData {
+	const formData = new FormData();
+	formData.append('name', name);
+	files?.forEach((file) => {
+		formData.append('files', file);
+	});
+	fileNames?.forEach((fileName) => {
+		formData.append('fileNames', fileName);
+	});
+	return formData;
 }
 
 function normalizeMultipartData(input: Record<string, unknown>): Record<string, unknown> {

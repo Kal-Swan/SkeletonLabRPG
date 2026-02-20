@@ -46,8 +46,7 @@ public static class DeleteBuildSystem
             foreach (var fileName in current.FileNames)
             {
                 await blobStorage.DeleteBlobAsync(
-                    BlobStorageConstants.UserBuildSystemContainer,
-                    $"{deleting.Id}/{fileName}");
+                    BlobStorageConstants.UserBuildSystemContainer, deleting.Id, fileName);
             }
             
             await buildRequestRepository.DeleteMany(

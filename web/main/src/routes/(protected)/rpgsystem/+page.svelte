@@ -1,22 +1,17 @@
 <script lang="ts">
-	import Form from '@components/form.svelte';
-	import InputField from '@components/input-field.svelte';
 	import {
-		buildSystemSchema,
 		type buildSystemSchemaType,
-		type createBuildSystemSchemaType,
-		createBuildSystemSchema
+		type createBuildSystemSchemaType
 	} from '@models/rpgbuild/rpg-system-schema';
 	import Label from '@components/label.svelte';
 	import { clientFetch } from '@helpers/client-fetch';
 	import { Actions } from '@models/actions';
 	import { notificationMessages } from '@lib/stores/notification-message';
 	import { NotificationType } from '@models/notification.types';
-	import Select from '@components/select.svelte';
-	import TextButton from '@components/text-button.svelte';
-	import { rpgSystemEndpoint } from './endpoint';
-	import IconButton from '@components/icon-button.svelte';
-	import { ButtonType, IconType } from '@models/Icon-type';
+	import { slide } from 'svelte/transition';
+	import ExistingSystemFilesForm from './existing-system-files-form.svelte';
+	import NewSystemFilesForm from './new-system-files-form.svelte';
+	import CollapseIconAnimation from '@components/collapse-icon-animation.svelte';
 
 	let { data } = $props<{ rpgSystems: buildSystemSchemaType[] }>();
 	let { rpgSystems }: { rpgSystems: buildSystemSchemaType[] } = data;
@@ -25,6 +20,18 @@
 	let openingFile = $state<boolean>(false);
 	let fileCount = $state<number>(0);
 	let savedRpgSystems = $state<buildSystemSchemaType[]>(rpgSystems ?? []);
+	let showCurrentSystemFilesForm = $state<boolean>(true);
+	let showNewSystemFilesForm = $state<boolean>(true);
+	let innerWidth = $state<number>(0);
+
+	let isMediumScreen = $derived(innerWidth > 600);
+
+	$effect(() => {
+		if (isMediumScreen) {
+			showCurrentSystemFilesForm = true;
+			showNewSystemFilesForm = true;
+		}
+	});
 
 	let newRpgSchema = $state<createBuildSystemSchemaType>({
 		name: '',
@@ -87,14 +94,19 @@
 		}
 	};
 	const handleCurrentUpdate = async () => {
-		// existingRpgSystemLoading = true;
-		// const updated = await clientFetch('/rpgsystem', Actions.updateRpgSystem, currentRpgSystem);
-		// if (updated.isSuccess) {
-		// 	existingRpgSystemLoading = false;
-		// 	currentRpgSystemsOptions = currentRpgSystemsOptions.map((system: buildSystemSchemaType) =>
-		// 		system.id === currentRpgSystem.id ? currentRpgSystem : system
-		// 	);
-		// }
+		existingRpgSystemLoading = true;
+		const updated = await clientFetch<buildSystemSchemaType>(
+			'/rpgsystem',
+			Actions.updateRpgSystem,
+			currentRpgSystem
+		);
+		if (updated.isSuccess) {
+			existingRpgSystemLoading = false;
+			currentRpgSystem = updated.data!;
+			currentRpgSystemsOptions = currentRpgSystemsOptions.map((system) =>
+				system.id === updated.data!.id ? updated.data! : system
+			);
+		}
 	};
 
 	const openFile = async (id: string, fileName: string) => {
@@ -136,19 +148,6 @@
 		input.value = '';
 	};
 
-	// $effect(() => {
-	// 	if (currentRpgSystem.id) {
-	// 		currentRpgSystem = currentRpgSystems.find(
-	// 			(system) => system.id === currentRpgSystem.id
-	// 		);
-	// 	}
-	// });
-
-	$effect(() => {
-		console.log('options');
-		console.log(currentRpgSystemsOptions);
-	});
-
 	function onCurrentBuildSystemChange(id: string) {
 		console.log('selected id');
 		console.log(id);
@@ -159,7 +158,7 @@
 	function removeFileNameFromCurrentBuildSystem(fileName: string) {
 		currentRpgSystem = {
 			...currentRpgSystem,
-			fileNames: currentRpgSystem.fileNames.filter((name) => name !== fileName)
+			fileNames: currentRpgSystem.fileNames?.filter((name) => name !== fileName)
 		};
 	}
 
@@ -170,121 +169,73 @@
 	function removeFile(fileName: string) {
 		newRpgSchema.files = newRpgSchema.files?.filter((file) => file.name !== fileName);
 	}
+
+	function handleShowCurrentSystemForm() {
+		showCurrentSystemFilesForm = !showCurrentSystemFilesForm;
+	}
+	function handleShowNewSystemFilesForm() {
+		showNewSystemFilesForm = !showNewSystemFilesForm;
+	}
 </script>
 
+<svelte:window bind:innerWidth />
 <div class="flex w-full flex-col justify-evenly gap-2 lg:flex-row">
 	{#if currentRpgSystemsOptions?.length > 0}
 		<div class="w-full rounded-md border-1 border-white p-5">
-			<Label text="Edit Saved Build Systems" />
-			<div class="mt-5 flex flex-col gap-3">
-				<Select onChange={onCurrentBuildSystemChange} options={currentRpgSystemsOptions} />
-
-				<Form
-					schema={buildSystemSchema}
-					data={currentRpgSystem}
-					saveButtonText="Update"
-					handleDelete={handleCurrentDelete}
-					handleSave={handleCurrentUpdate}
-					loading={existingRpgSystemLoading}
-				>
-					<InputField name="Build System Name" bind:value={currentRpgSystem.name} />
-					{#each currentRpgSystem.fileNames as fileName, index (index)}
-						<div class="mb-2 flex items-center gap-2">
-							<Label text={fileName} textSize="sm" />
-							<TextButton
-								loading={openingFile}
-								text="Open File"
-								onClick={() => openFile(currentRpgSystem.id, fileName)}
-							/>
-							<TextButton
-								text="Remove File"
-								onClick={() => removeFileNameFromCurrentBuildSystem(fileName)}
-							/>
-						</div>
-					{/each}
-					<InputField
-						name="Add new file"
-						inputFieldId="addNewFileToExistingBuildSystem"
-						type="file"
-						onChange={addNewFileToExistingBuildSystem}
-					/>
-					{#if currentRpgSystem.files != null && currentRpgSystem.files.length > 0}
-						<Label text="Files added:" textSize="sm" />
-					{/if}
-
-					<div class="grid w-full grid-cols-1 gap-2 md:grid-cols-3">
-						{#each currentRpgSystem.files as file, index (index)}
-							<div
-								class="mb-2 flex justify-between sm:w-full sm:justify-start md:items-center md:gap-2"
-							>
-								<Label text={file.name} textSize="sm" />
-								<div>
-									<IconButton
-										buttonType={ButtonType.add}
-										iconType={IconType.open}
-										onClick={() => openNewFile(file)}
-									/>
-									<IconButton
-										buttonType={ButtonType.delete}
-										iconType={IconType.delete}
-										onClick={() => removeFileFromCurrentBuildSystem(file.name)}
-									/>
-								</div>
-							</div>
-						{/each}
+			<div class="sm:block md:hidden">
+				<button class="w-full cursor-pointer" type="button" onclick={handleShowCurrentSystemForm}>
+					<div class="flex justify-between">
+						<Label text="Edit Saved Build Systems" />
+						<CollapseIconAnimation collapse={showCurrentSystemFilesForm} />
 					</div>
-				</Form>
+				</button>
 			</div>
+			<div class="hidden sm:hidden md:block">
+				<Label text="Edit Saved Build Systems" />
+			</div>
+			{#if showCurrentSystemFilesForm}
+				<div transition:slide={{ duration: 400 }} class="mt-5 flex flex-col gap-3">
+					<ExistingSystemFilesForm
+						rpgSystemOptions={currentRpgSystemsOptions}
+						onBuildSystemChange={onCurrentBuildSystemChange}
+						rpgSystem={currentRpgSystem}
+						handleDelete={handleCurrentDelete}
+						handleUpdate={handleCurrentUpdate}
+						loading={existingRpgSystemLoading}
+						{openingFile}
+						removeFileName={removeFileNameFromCurrentBuildSystem}
+						removeFile={removeFileFromCurrentBuildSystem}
+						addNewFile={addNewFileToExistingBuildSystem}
+						{openNewFile}
+						{openFile}
+					/>
+				</div>
+			{/if}
 		</div>
 	{/if}
 	<div class="w-full rounded-md border-1 border-white p-5">
-		<Label text="Create New RPG System" isHeader />
-
-		<Form
-			loading={newRpgSystemLoading}
-			schema={createBuildSystemSchema}
-			data={newRpgSchema}
-			{handleSave}
-		>
-			<div class="flex gap-2">
-				<div class="flex flex-1 flex-col gap-2">
-					<InputField name="Build System Name" bind:value={newRpgSchema.name} />
+		<div class="md:hidden">
+			<button class="w-full cursor-pointer" type="button" onclick={handleShowNewSystemFilesForm}>
+				<div class="flex justify-between">
+					<Label text="Create New RPG System" />
+					<CollapseIconAnimation collapse={showNewSystemFilesForm} />
 				</div>
-				<div class="flex flex-1 flex-col gap-2">
-					<InputField
-						name="Build System File"
-						inputFieldId="buildSystemFile"
-						type="file"
-						onChange={addNewFile}
-					/>
-				</div>
+			</button>
+		</div>
+		<div class="hidden sm:hidden md:block">
+			<Label text="Create New RPG System" />
+		</div>
+		{#if showNewSystemFilesForm}
+			<div transition:slide={{ duration: 400 }} class="mt-5 flex flex-col gap-3">
+				<NewSystemFilesForm
+					{addNewFile}
+					{handleSave}
+					{openNewFile}
+					{removeFile}
+					loading={existingRpgSystemLoading}
+					{newRpgSchema}
+				/>
 			</div>
-
-			{#if newRpgSchema.files.length > 0}
-				<Label text="Files added:" textSize="sm" />
-			{/if}
-
-			<div class="grid w-full grid-cols-1 gap-2 md:grid-cols-3">
-				{#each newRpgSchema.files as file, index (index)}
-					<div
-						class="mb-2 flex justify-between sm:w-full sm:justify-start md:items-center md:gap-2"
-					>
-						<Label text={file.name} textSize="sm" />
-						<div>
-							<IconButton
-								buttonType={ButtonType.add}
-								iconType={IconType.open}
-								onClick={() => openNewFile(file)}
-							/>
-							<IconButton
-								buttonType={ButtonType.delete}
-								iconType={IconType.delete}
-								onClick={() => removeFile(file.name)}
-							/>
-						</div>
-					</div>
-				{/each}
-			</div>
-		</Form>
+		{/if}
 	</div>
 </div>
