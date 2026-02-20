@@ -65,7 +65,7 @@
 	class="flex w-full cursor-pointer flex-col gap-2 rounded-2xl border p-2"
 >
 	<div class="flex items-start justify-between">
-		<div id={`item-title-${item.id}`} class="font-bold uppercase">{title}</div>
+		<div id={`item-title-${item.id}`} class=" self-center font-bold uppercase">{title}</div>
 		<div class="relative">
 			{#if loading === item.id}
 				<Loading />

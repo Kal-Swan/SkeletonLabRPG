@@ -6,7 +6,7 @@ export const buildSystemSchema = z
 	.object({
 		id: z.string(),
 		name: z.string().min(1, 'Name is required'),
-		fileNames: z.array(z.string()),
+		fileNames: z.array(z.string()).optional(),
 		files: z
 			.array(
 				z
@@ -20,7 +20,7 @@ export const buildSystemSchema = z
 	})
 	.refine(
 		(schema) => {
-			if (schema.fileNames.length === 0 && !schema.files?.length) {
+			if (!schema.fileNames?.length && !schema.files?.length) {
 				return false;
 			}
 			return true;

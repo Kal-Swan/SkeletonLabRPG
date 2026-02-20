@@ -20,10 +20,9 @@ public static class GetBuildSystemFile
         private static async Task<IResult> Handler(
             Guid id,
             string fileName,
-            [FromServices] IBlobStorage blobStorage,
-            [FromServices] AccountDetails accountDetails)
+            [FromServices] IBlobStorage blobStorage)
         {
-            var blobItem = await blobStorage.DownloadBlobAsync(BlobStorageConstants.UserBuildSystemContainer, $"{accountDetails.UserId}/{id}/{fileName}");
+            var blobItem = await blobStorage.DownloadBlobAsync(BlobStorageConstants.UserBuildSystemContainer, id, fileName);
             return Results.File(blobItem.Value.Content, blobItem.Value.ContentType, fileName);
         }
     }

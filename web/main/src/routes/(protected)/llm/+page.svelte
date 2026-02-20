@@ -20,7 +20,9 @@
 	import { SignalRHubConstants } from './signalr-hub-constants';
 	import { Tween } from 'svelte/motion';
 	import ProcessingRequest from './processing-request.svelte';
-
+	import CollapseIconAnimation from '@components/collapse-icon-animation.svelte';
+	import { slide } from 'svelte/transition';
+	import { sineIn } from 'svelte/easing';
 	let { data } = $props();
 	let {
 		buildSystems,
@@ -44,6 +46,8 @@
 	});
 
 	let selectedItem = $state<buildRequestAnswerType | null>(null);
+
+	let collapsedQuestions = $state<string[]>([]);
 
 	const menu = [
 		{
@@ -186,6 +190,17 @@
 			a.latestProcessedDate > b.latestProcessedDate ? -1 : 1
 		)
 	);
+
+	function handleCollapsableQuestion(id: string) {
+		const questionExists = collapsedQuestions.some((q) => q == id);
+
+		if (questionExists) {
+			collapsedQuestions = collapsedQuestions.filter((q) => q != id);
+			return;
+		}
+
+		collapsedQuestions = [...collapsedQuestions, id];
+	}
 </script>
 
 <div class="mt-4">
@@ -236,21 +251,35 @@
 				{#if index === 0 || (index > 0 && sortedBuildRequests[index - 1].buildSystemName !== buildRequest.buildSystemName)}
 					<Label text={buildRequest.buildSystemName} textSize="text-md" />
 				{/if}
-				<Label text={`Question: ${buildRequest.question}`} textSize="text-sm" />
+				<button
+					class="w-full cursor-pointer"
+					type="button"
+					onclick={() => handleCollapsableQuestion(buildRequest.id)}
+				>
+					<div class="flex justify-between">
+						<Label text={`Question: ${buildRequest.question}`} textSize="text-sm" />
+						<CollapseIconAnimation collapse={collapsedQuestions.includes(buildRequest.id)} />
+					</div>
+				</button>
 			</div>
 
-			<div class="grid w-full grid-cols-1 gap-2 md:grid-cols-3">
-				{#each buildRequest.answers.filter((a) => a.status === BuildAnswerStatus.None) as answer}
-					<ItemDescription
-						{menu}
-						item={mapToBuildRequestAnswerType(answer, buildRequest.id)}
-						handleItemClick={() =>
-							onBuildItemClick(mapToBuildRequestAnswerType(answer, buildRequest.id))}
-						title={answer.name}
-						loading={loadingBuildSave}
-					/>
-				{/each}
-			</div>
+			{#if collapsedQuestions.includes(buildRequest.id)}
+				<div
+					transition:slide={{ duration: 200, easing: sineIn }}
+					class="grid w-full grid-cols-1 gap-2 md:grid-cols-3"
+				>
+					{#each buildRequest.answers.filter((a) => a.status === BuildAnswerStatus.None) as answer}
+						<ItemDescription
+							{menu}
+							item={mapToBuildRequestAnswerType(answer, buildRequest.id)}
+							handleItemClick={() =>
+								onBuildItemClick(mapToBuildRequestAnswerType(answer, buildRequest.id))}
+							title={answer.name}
+							loading={loadingBuildSave}
+						/>
+					{/each}
+				</div>
+			{/if}
 		{/each}
 	{/if}
 	{#if selectedItem}
