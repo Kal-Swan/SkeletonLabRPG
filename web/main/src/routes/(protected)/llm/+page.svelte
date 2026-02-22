@@ -23,6 +23,7 @@
 	import CollapseIconAnimation from '@components/collapse-icon-animation.svelte';
 	import { slide } from 'svelte/transition';
 	import { sineIn } from 'svelte/easing';
+	import { HubConnectionState } from '@microsoft/signalr';
 	let { data } = $props();
 	let {
 		buildSystems,
@@ -152,7 +153,9 @@
 
 	$effect(() => {
 		async function buildRequestListener() {
-			await hubConnection.start();
+			if (hubConnection.state === HubConnectionState.Disconnected) {
+				await hubConnection.start();
+			}
 
 			hubConnection.on(SignalRHubConstants.BuildRequestComplete, (data) => {
 				loadingAnswer = false;
