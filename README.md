@@ -1,15 +1,15 @@
 # SkeletonLabRPG
 
 ## How it works
-Login to system
-Create a new RPG system and upload a RPG system PDF file to azure blob storage, saved against the user.
-Select your RPG system and ask a question on the type of RPG build you want e.g. "I want a defensive build"
-The question is sent to the .Net Api, stored in Cosmos DB and Queued to Azure Bus Service
-Python App is listening to queue in Bus service, picks up question with user Id, based on this information gets the appropriate file from blob storage stored against the user Id.
-Gets the contents of the file, cleans it for learning and sends it to Open AI to learn and build the answer.
-Sends answer to .Net API
-.Net API stores answer in Cosmos DB and uses Signal R to immediately send answer to Svelte app.
-Also, using SignalR for progress bar so that user can see how long it takes.
+1. Login to system
+2. Create a new RPG system and upload a RPG system PDF file to azure blob storage, saved against the user.
+3. Select your RPG system and ask a question on the type of RPG build you want e.g. "I want a defensive build"
+4. The question is sent to the .Net Api, stored in Cosmos DB and Queued to Azure Bus Service
+5. Python App is listening to queue in Bus service, picks up question with user Id, based on this information gets the appropriate file from blob storage stored against the user Id.
+6. Gets the contents of the file, cleans it for learning and sends it to Open AI to learn and build the answer.
+7. Sends answer to .Net API and removes question from queue
+8. .Net API stores answer in Cosmos DB and uses SignalR to immediately send answer to Svelte app.
+9. Also, using SignalR for progress bar so that user can see how long it is taking to receive an answer
 
 # Architecture
 
